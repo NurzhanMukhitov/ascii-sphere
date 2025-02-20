@@ -19,17 +19,8 @@
       height: 100vh;
       position: relative;
     }
-    /* Header: занимает всю ширину, содержит заголовок слева */
-    header {
-      width: 100%;
-      padding: 10px 20px;
-      background: #111;
-      text-align: left;
-      font-size: 32px;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-    }
-    /* Переключатель языка – располагается под header справа */
+
+    /* Переключатель языка (RU/ENG) — располагается наверху справа */
     .lang-selector {
       position: absolute;
       top: 60px;
@@ -49,7 +40,8 @@
       background: white;
       color: black;
     }
-    /* Информационный блок (левая колонка) – под header */
+
+    /* Информационный блок (левая колонка) */
     .info-container {
       position: absolute;
       top: 80px;
@@ -73,19 +65,18 @@
     .eng {
       display: none;
     }
+
     /* Canvas по центру */
     #canvas {
       display: block;
       margin: 0 auto;
     }
+
     /* Адаптив: для узких экранов корректируем info-container и lang-selector */
     @media screen and (max-width: 600px) {
       .info-container {
         left: 10px;
         right: 10px;
-      }
-      header {
-        font-size: 24px;
       }
       .info-block h2 {
         font-size: 18px;
@@ -101,10 +92,8 @@
   </style>
 </head>
 <body>
-  <!-- Header с заголовком -->
-  <header>3D ANIMATED SPHERE</header>
 
-  <!-- Переключатель языка (RU/ENG) справа под header -->
+  <!-- Переключатель языка (RU/ENG) -->
   <div class="lang-selector">
     <button id="btn-ru">RU</button>
     <button id="btn-eng">ENG</button>
@@ -222,16 +211,19 @@
       let z1 = y * sin + z * cos;
       y = y1;
       z = z1;
+
       cos = Math.cos(angleY); sin = Math.sin(angleY);
       let x1 = x * cos + z * sin;
       let z2 = -x * sin + z * cos;
       x = x1;
       z = z2;
+
       cos = Math.cos(angleZ); sin = Math.sin(angleZ);
       let x2 = x * cos - y * sin;
       let y2 = x * sin + y * cos;
       x = x2;
       y = y2;
+
       return { x, y, z, char: point.char };
     }
 
