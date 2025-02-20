@@ -28,14 +28,20 @@
       letter-spacing: 2px;
     }
 
-    /* Текст слева (блок «Что это») */
+    /* Блок слева */
     .left-info {
       position: absolute;
-      top: 100px;
+      top: 120px;
       left: 20px;
       font-size: 16px;
       line-height: 1.5;
       max-width: 300px;
+    }
+    /* Заголовок внутри .left-info (ЧТО ЭТО) */
+    .left-info h2 {
+      text-transform: uppercase;
+      font-size: 24px;
+      margin-bottom: 10px;
     }
 
     /* Canvas по центру */
@@ -44,7 +50,7 @@
       margin: 0 auto;
     }
 
-    /* Блок снизу слева («Сделано» и кнопка Instagram) */
+    /* Блок снизу слева */
     .bottom-links {
       position: absolute;
       bottom: 20px;
@@ -52,8 +58,14 @@
       font-size: 16px;
       line-height: 1.5;
     }
+    /* Заголовок внутри .bottom-links (СДЕЛАНО) */
+    .bottom-links h2 {
+      text-transform: uppercase;
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
 
-    /* Стиль кнопки Instagram (чтобы была кликабельной) */
+    /* Стиль кнопки Instagram */
     .instagram-button {
       display: inline-block;
       margin-top: 8px;
@@ -75,7 +87,7 @@
 
   <!-- Текст слева -->
   <div class="left-info">
-    <h2>Что это</h2>
+    <h2>ЧТО ЭТО</h2>
     <p>
       Это псевдографическая симуляция, где каждый символ означает 3D-точку.
       Код написан Chat GPT. Симуляция интерактивная и с ней можно взаимодействовать.
@@ -85,9 +97,9 @@
   <!-- Canvas для ASCII-сферы -->
   <canvas id="canvas"></canvas>
 
-  <!-- Блок снизу (Сделано + Instagram) -->
+  <!-- Блок снизу (СДЕЛАНО + Instagram) -->
   <div class="bottom-links">
-    <p>Сделано</p>
+    <h2>СДЕЛАНО</h2>
     <a class="instagram-button" href="https://www.instagram.com/nmk_one/" target="_blank">
       Instagram
     </a>
@@ -124,7 +136,7 @@
     /* Углы вращения */
     let rotationX = 0;
     let rotationY = 0;
-    let rotationZ = 0; // можно подкручивать для хаотичности
+    let rotationZ = 0; // можно крутить для «хаотичности»
 
     /* Управление мышью */
     let isDragging = false;
@@ -214,7 +226,6 @@
       }
 
       // Автовращение — хаотичные приращения
-      // Можно поиграть со скоростью/знаками
       rotationX += 0.005;
       rotationY += 0.01;
       rotationZ += 0.003;
