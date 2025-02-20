@@ -20,12 +20,11 @@
       position: relative;
     }
 
-    /* Переключатель языка (RU/ENG) – теперь с отступом сверху */
+    /* Переключатель языка (RU/ENG) – с одинаковым отступом сверху, чтобы выровнять по высоте */
     .lang-selector {
       position: absolute;
-      top: 80px; /* увеличен отступ сверху */
+      top: 60px;
       right: 20px;
-      font-family: monospace;
     }
     .lang-selector button {
       background: transparent;
@@ -41,10 +40,10 @@
       color: black;
     }
 
-    /* Информационный блок (левая колонка) – с большим отступом сверху */
+    /* Информационный блок (левая колонка) – тот же отступ сверху */
     .info-container {
       position: absolute;
-      top: 120px; /* сдвинут ниже */
+      top: 60px;
       left: 20px;
       max-width: 300px;
       font-family: monospace;
@@ -85,7 +84,7 @@
         font-size: 14px;
       }
       .lang-selector {
-        top: 70px;
+        top: 50px;
         right: 10px;
       }
     }
