@@ -2,9 +2,9 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>3D ANIMATED SPHERE</title>
+  <title>3D Animated Shape</title>
   <style>
-    /* Сброс отступов и базовые стили */
+    /* Сброс отступов, фона и базовые настройки */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -14,13 +14,13 @@
       background: black;
       color: white;
       font-family: monospace;
-      overflow: hidden; /* убираем скролл */
+      overflow: hidden; /* чтобы не было прокрутки */
       position: relative;
       width: 100vw;
       height: 100vh;
     }
 
-    /* Заголовок на всю ширину */
+    /* Заголовок по центру сверху */
     header {
       text-align: center;
       font-size: 48px;
@@ -28,23 +28,24 @@
       letter-spacing: 2px;
     }
 
-    /* Текст слева (блок «Что это») */
+    /* Блок слева (абсолютное позиционирование) */
     .left-info {
       position: absolute;
       top: 100px;
       left: 20px;
       font-size: 16px;
       line-height: 1.5;
-      max-width: 300px;
+      max-width: 200px; /* чтобы текст не растягивался по всей ширине */
     }
 
     /* Canvas по центру */
     #canvas {
       display: block;
       margin: 0 auto;
+      /* Задаём высоту/ширину через JS при resize */
     }
 
-    /* Блок снизу слева («Сделано» и кнопка Instagram) */
+    /* Блок внизу слева */
     .bottom-links {
       position: absolute;
       bottom: 20px;
@@ -52,45 +53,25 @@
       font-size: 16px;
       line-height: 1.5;
     }
-
-    /* Стиль кнопки Instagram (чтобы была кликабельной) */
-    .instagram-button {
-      display: inline-block;
-      margin-top: 8px;
-      padding: 5px 10px;
-      border: 1px solid white;
-      color: white;
-      text-decoration: none;
-      transition: background 0.3s, color 0.3s;
-    }
-    .instagram-button:hover {
-      background: white;
-      color: black;
-    }
   </style>
 </head>
 <body>
-  <!-- Заголовок -->
-  <header>3D ANIMATED SPHERE</header>
+  <!-- Верхний заголовок -->
+  <header>3D ANIMATED SHAPE</header>
 
   <!-- Текст слева -->
   <div class="left-info">
-    <h2>Что это</h2>
-    <p>
-      Это псевдографическая симуляция, где каждый символ означает 3D-точку.
-      Код написан Chat GPT. Симуляция интерактивная и с ней можно взаимодействовать.
-    </p>
+    <p>Vito 370</p>
+    <p>Это псевдографическая симуляция, где каждый символ означает 3D-точку.</p>
+    <p>Сфера вращается, а мы можем взаимодействовать мышью.</p>
   </div>
 
   <!-- Canvas для ASCII-сферы -->
   <canvas id="canvas"></canvas>
 
-  <!-- Блок снизу (Сделано + Instagram) -->
+  <!-- Блок снизу слева -->
   <div class="bottom-links">
-    <p>Сделано</p>
-    <a class="instagram-button" href="https://www.instagram.com/nmk_one/" target="_blank">
-      Instagram
-    </a>
+    <p>Telegram<br>Instagram</p>
   </div>
 
   <script>
@@ -98,7 +79,7 @@
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
 
-    /* Устанавливаем размеры canvas */
+    /* Устанавливаем изначальные размеры */
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
@@ -116,15 +97,15 @@
       const y = radius * Math.sin(theta) * Math.sin(phi);
       const z = radius * Math.cos(theta) + zOffset;
 
-      // Случайный символ (0-9)
+      // Выбираем случайный символ (0-9)
       const char = Math.floor(Math.random() * 10);
       points.push({ x, y, z, char });
     }
 
-    /* Углы вращения */
+    /* Углы вращения (без автоматической анимации) */
     let rotationX = 0;
     let rotationY = 0;
-    let rotationZ = 0; // можно подкручивать для хаотичности
+    let rotationZ = 0; // Можно оставить 0, или крутить если хочется
 
     /* Управление мышью */
     let isDragging = false;
@@ -158,7 +139,7 @@
       isDragging = false;
     });
 
-    /* Поворот точки вокруг X, Y, Z */
+    /* Функция вращения точки вокруг X, Y, Z */
     function rotate(point, angleX, angleY, angleZ) {
       let { x, y, z } = point;
 
@@ -176,7 +157,7 @@
       x = x1;
       z = z2;
 
-      // Поворот вокруг Z
+      // Поворот вокруг Z (если нужен)
       cos = Math.cos(angleZ); sin = Math.sin(angleZ);
       let x2 = x * cos - y * sin;
       let y2 = x * sin + y * cos;
@@ -188,7 +169,7 @@
 
     /* Перспективная проекция */
     function project(point) {
-      const focalLength = 500; // "камера"
+      const focalLength = 500; // Расстояние "камеры"
       const scale = focalLength / (focalLength + point.z);
       return {
         x: point.x * scale + canvas.width / 2,
@@ -196,7 +177,7 @@
       };
     }
 
-    /* Анимация */
+    /* Основная функция рендера */
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -204,7 +185,7 @@
         const rotated = rotate(p, rotationX, rotationY, rotationZ);
         const proj = project(rotated);
 
-        // Вычисляем яркость на основе z
+        // Рассчитываем яркость на основе z
         const brightnessFactor = 1 - ((rotated.z - (zOffset - radius)) / (2 * radius));
         const shade = Math.floor(128 + brightnessFactor * 127);
 
@@ -213,17 +194,12 @@
         ctx.fillText(p.char, proj.x, proj.y);
       }
 
-      // Автовращение — хаотичные приращения
-      // Можно поиграть со скоростью/знаками
-      rotationX += 0.005;
-      rotationY += 0.01;
-      rotationZ += 0.003;
-
       requestAnimationFrame(draw);
     }
+
     draw();
 
-    /* Ресайз */
+    /* Обработка ресайза окна */
     window.addEventListener('resize', () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
