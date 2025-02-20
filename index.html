@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>3D ANIMATED SPHERE</title>
   <style>
-    /* Сброс отступов и базовые стили */
+    /* Сброс базовых стилей */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -14,131 +14,182 @@
       background: black;
       color: white;
       font-family: monospace;
-      overflow: hidden; /* убираем скролл */
-      position: relative;
+      overflow: hidden;
       width: 100vw;
       height: 100vh;
+      position: relative;
     }
-
-    /* Заголовок на всю ширину */
+    /* Header: занимает всю ширину, содержит заголовок слева */
     header {
-      text-align: center;
-      font-size: 48px;
-      margin-top: 20px;
+      width: 100%;
+      padding: 10px 20px;
+      background: #111;
+      text-align: left;
+      font-size: 32px;
+      text-transform: uppercase;
       letter-spacing: 2px;
     }
-
-    /* Блок слева */
-    .left-info {
+    /* Переключатель языка – располагается под header справа */
+    .lang-selector {
       position: absolute;
-      top: 120px;
-      left: 20px;
-      font-size: 16px;
-      line-height: 1.5;
-      max-width: 300px;
+      top: 60px;
+      right: 20px;
+      font-family: monospace;
     }
-    /* Заголовок внутри .left-info (ЧТО ЭТО) */
-    .left-info h2 {
+    .lang-selector button {
+      background: transparent;
+      border: 1px solid white;
+      color: white;
+      padding: 5px 10px;
+      margin-left: 5px;
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s;
+    }
+    .lang-selector button:hover {
+      background: white;
+      color: black;
+    }
+    /* Информационный блок (левая колонка) – под header */
+    .info-container {
+      position: absolute;
+      top: 80px;
+      left: 20px;
+      max-width: 300px;
+      font-family: monospace;
+    }
+    .info-block {
+      margin-bottom: 20px;
+    }
+    .info-block h2 {
+      font-size: 20px;
       text-transform: uppercase;
-      font-size: 24px;
       margin-bottom: 10px;
     }
-
+    .info-block p {
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    /* По умолчанию отображается русская версия */
+    .eng {
+      display: none;
+    }
     /* Canvas по центру */
     #canvas {
       display: block;
       margin: 0 auto;
     }
-
-    /* Блок снизу слева */
-    .bottom-links {
-      position: absolute;
-      bottom: 20px;
-      left: 20px;
-      font-size: 16px;
-      line-height: 1.5;
-    }
-    /* Заголовок внутри .bottom-links (СДЕЛАНО) */
-    .bottom-links h2 {
-      text-transform: uppercase;
-      font-size: 24px;
-      margin-bottom: 10px;
-    }
-
-    /* Стиль кнопки Instagram */
-    .instagram-button {
-      display: inline-block;
-      margin-top: 8px;
-      padding: 5px 10px;
-      border: 1px solid white;
-      color: white;
-      text-decoration: none;
-      transition: background 0.3s, color 0.3s;
-    }
-    .instagram-button:hover {
-      background: white;
-      color: black;
+    /* Адаптив: для узких экранов корректируем info-container и lang-selector */
+    @media screen and (max-width: 600px) {
+      .info-container {
+        left: 10px;
+        right: 10px;
+      }
+      header {
+        font-size: 24px;
+      }
+      .info-block h2 {
+        font-size: 18px;
+      }
+      .info-block p {
+        font-size: 14px;
+      }
+      .lang-selector {
+        top: 50px;
+        right: 10px;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- Заголовок -->
+  <!-- Header с заголовком -->
   <header>3D ANIMATED SPHERE</header>
 
-  <!-- Текст слева -->
-  <div class="left-info">
-    <h2>ЧТО ЭТО</h2>
-    <p>
-      Это псевдографическая симуляция, где каждый символ означает 3D-точку.
-      Код написан Chat GPT. Симуляция интерактивная и с ней можно взаимодействовать.
-    </p>
+  <!-- Переключатель языка (RU/ENG) справа под header -->
+  <div class="lang-selector">
+    <button id="btn-ru">RU</button>
+    <button id="btn-eng">ENG</button>
+  </div>
+
+  <!-- Информационный блок (левая колонка) -->
+  <div class="info-container">
+    <!-- Русская версия -->
+    <div class="info-block ru">
+      <h2>Что это</h2>
+      <p>
+        Это псевдографическая симуляция, где каждый символ означает 3D-точку. 
+        Код написан Chat GPT. Симуляция интерактивная и с ней можно взаимодействовать.
+      </p>
+    </div>
+    <div class="info-block ru">
+      <h2>Сделано</h2>
+      <p>
+        <a href="https://www.instagram.com/nmk_one/" target="_blank" style="color: white; text-decoration: underline;">
+          Instagram
+        </a>
+      </p>
+    </div>
+    <!-- Английская версия -->
+    <div class="info-block eng">
+      <h2>What is it</h2>
+      <p>
+        This is a pseudographics simulation where each character represents a 3D point.
+        Code written by Chat GPT. The simulation is interactive and can be controlled.
+      </p>
+    </div>
+    <div class="info-block eng">
+      <h2>Made by</h2>
+      <p>
+        <a href="https://www.instagram.com/nmk_one/" target="_blank" style="color: white; text-decoration: underline;">
+          Instagram
+        </a>
+      </p>
+    </div>
   </div>
 
   <!-- Canvas для ASCII-сферы -->
   <canvas id="canvas"></canvas>
 
-  <!-- Блок снизу (СДЕЛАНО + Instagram) -->
-  <div class="bottom-links">
-    <h2>СДЕЛАНО</h2>
-    <a class="instagram-button" href="https://www.instagram.com/nmk_one/" target="_blank">
-      Instagram
-    </a>
-  </div>
-
   <script>
-    /* Получаем canvas и контекст */
+    // Переключение языков
+    const btnRU = document.getElementById('btn-ru');
+    const btnENG = document.getElementById('btn-eng');
+    function showRU() {
+      document.querySelectorAll('.ru').forEach(el => el.style.display = 'block');
+      document.querySelectorAll('.eng').forEach(el => el.style.display = 'none');
+    }
+    function showENG() {
+      document.querySelectorAll('.ru').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.eng').forEach(el => el.style.display = 'block');
+    }
+    btnRU.addEventListener('click', showRU);
+    btnENG.addEventListener('click', showENG);
+    // По умолчанию показываем русский язык
+    showRU();
+
+    /* Код для симуляции ASCII-сферы */
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
-
-    /* Устанавливаем размеры canvas */
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    /* Параметры сферы */
-    const numPoints = 1000;  // Количество точек
-    const radius = 200;      // Радиус сферы
-    const zOffset = 400;     // Смещение сферы по оси Z
+    const numPoints = 1000;
+    const radius = 200;
+    const zOffset = 400;
     const points = [];
-
-    /* Генерация точек на сфере */
     for (let i = 0; i < numPoints; i++) {
-      const theta = Math.acos(2 * Math.random() - 1); // угол от 0 до π
-      const phi = 2 * Math.PI * Math.random();        // угол от 0 до 2π
+      const theta = Math.acos(2 * Math.random() - 1);
+      const phi = 2 * Math.PI * Math.random();
       const x = radius * Math.sin(theta) * Math.cos(phi);
       const y = radius * Math.sin(theta) * Math.sin(phi);
       const z = radius * Math.cos(theta) + zOffset;
-
-      // Случайный символ (0-9)
       const char = Math.floor(Math.random() * 10);
       points.push({ x, y, z, char });
     }
 
-    /* Углы вращения */
     let rotationX = 0;
     let rotationY = 0;
-    let rotationZ = 0; // можно крутить для «хаотичности»
+    let rotationZ = 0;
 
-    /* Управление мышью */
     let isDragging = false;
     let lastMouseX = 0;
     let lastMouseY = 0;
@@ -148,21 +199,15 @@
       lastMouseX = e.clientX;
       lastMouseY = e.clientY;
     });
-
     canvas.addEventListener('mousemove', (e) => {
       if (!isDragging) return;
       const dx = e.clientX - lastMouseX;
       const dy = e.clientY - lastMouseY;
-
-      // Поворот вокруг Y от dx
       rotationY += dx * 0.01;
-      // Поворот вокруг X от dy
       rotationX += dy * 0.01;
-
       lastMouseX = e.clientX;
       lastMouseY = e.clientY;
     });
-
     canvas.addEventListener('mouseup', () => {
       isDragging = false;
     });
@@ -170,37 +215,28 @@
       isDragging = false;
     });
 
-    /* Поворот точки вокруг X, Y, Z */
     function rotate(point, angleX, angleY, angleZ) {
       let { x, y, z } = point;
-
-      // Поворот вокруг X
       let cos = Math.cos(angleX), sin = Math.sin(angleX);
       let y1 = y * cos - z * sin;
       let z1 = y * sin + z * cos;
       y = y1;
       z = z1;
-
-      // Поворот вокруг Y
       cos = Math.cos(angleY); sin = Math.sin(angleY);
       let x1 = x * cos + z * sin;
       let z2 = -x * sin + z * cos;
       x = x1;
       z = z2;
-
-      // Поворот вокруг Z
       cos = Math.cos(angleZ); sin = Math.sin(angleZ);
       let x2 = x * cos - y * sin;
       let y2 = x * sin + y * cos;
       x = x2;
       y = y2;
-
       return { x, y, z, char: point.char };
     }
 
-    /* Перспективная проекция */
     function project(point) {
-      const focalLength = 500; // "камера"
+      const focalLength = 500;
       const scale = focalLength / (focalLength + point.z);
       return {
         x: point.x * scale + canvas.width / 2,
@@ -208,33 +244,25 @@
       };
     }
 
-    /* Анимация */
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
       for (let p of points) {
         const rotated = rotate(p, rotationX, rotationY, rotationZ);
         const proj = project(rotated);
-
-        // Вычисляем яркость на основе z
         const brightnessFactor = 1 - ((rotated.z - (zOffset - radius)) / (2 * radius));
         const shade = Math.floor(128 + brightnessFactor * 127);
-
         ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
         ctx.font = "16px monospace";
         ctx.fillText(p.char, proj.x, proj.y);
       }
-
-      // Автовращение — хаотичные приращения
+      // Автовращение – хаотичные приращения
       rotationX += 0.005;
       rotationY += 0.01;
       rotationZ += 0.003;
-
       requestAnimationFrame(draw);
     }
     draw();
 
-    /* Ресайз */
     window.addEventListener('resize', () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
