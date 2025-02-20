@@ -2,66 +2,174 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>ASCII-сфера</title>
+  <title>3D Animated Shape</title>
   <style>
-    body { margin: 0; overflow: hidden; background: black; }
-    canvas { display: block; }
+    /* Сброс отступов, фона и базовые настройки */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: black;
+      color: white;
+      font-family: monospace;
+      overflow: hidden; /* чтобы не было прокрутки */
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    /* Заголовок по центру сверху */
+    header {
+      text-align: center;
+      font-size: 48px;
+      margin-top: 20px;
+      letter-spacing: 2px;
+    }
+
+    /* Блок слева (абсолютное позиционирование) */
+    .left-info {
+      position: absolute;
+      top: 100px;
+      left: 20px;
+      font-size: 16px;
+      line-height: 1.5;
+      max-width: 200px; /* чтобы текст не растягивался по всей ширине */
+    }
+
+    /* Canvas по центру */
+    #canvas {
+      display: block;
+      margin: 0 auto;
+      /* Задаём высоту/ширину через JS при resize */
+    }
+
+    /* Блок внизу слева */
+    .bottom-links {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      font-size: 16px;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
+  <!-- Верхний заголовок -->
+  <header>3D ANIMATED SHAPE</header>
+
+  <!-- Текст слева -->
+  <div class="left-info">
+    <p>Vito 370</p>
+    <p>Это псевдографическая симуляция, где каждый символ означает 3D-точку.</p>
+    <p>Сфера вращается, а мы можем взаимодействовать мышью.</p>
+  </div>
+
+  <!-- Canvas для ASCII-сферы -->
   <canvas id="canvas"></canvas>
+
+  <!-- Блок снизу слева -->
+  <div class="bottom-links">
+    <p>Telegram<br>Instagram</p>
+  </div>
+
   <script>
+    /* Получаем canvas и контекст */
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
+
+    /* Устанавливаем изначальные размеры */
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
+    /* Параметры сферы */
+    const numPoints = 1000;  // Количество точек
+    const radius = 200;      // Радиус сферы
+    const zOffset = 400;     // Смещение сферы по оси Z
     const points = [];
-    const numPoints = 1000;    // Количество точек
-    const radius = 200;        // Радиус сферы
-    const zOffset = 400;       // Смещение сферы по оси Z
 
-    // Генерируем точки на сфере
+    /* Генерация точек на сфере */
     for (let i = 0; i < numPoints; i++) {
-      const theta = Math.acos(2 * Math.random() - 1); // от 0 до π
-      const phi = 2 * Math.PI * Math.random();          // от 0 до 2π
+      const theta = Math.acos(2 * Math.random() - 1); // угол от 0 до π
+      const phi = 2 * Math.PI * Math.random();        // угол от 0 до 2π
       const x = radius * Math.sin(theta) * Math.cos(phi);
       const y = radius * Math.sin(theta) * Math.sin(phi);
       const z = radius * Math.cos(theta) + zOffset;
-      // Присваиваем случайное число от 0 до 9
+
+      // Выбираем случайный символ (0-9)
       const char = Math.floor(Math.random() * 10);
       points.push({ x, y, z, char });
     }
 
-    // Начальные углы поворота
-    let angleX = 0;
-    let angleY = 0;
-    let angleZ = 0;
+    /* Углы вращения (без автоматической анимации) */
+    let rotationX = 0;
+    let rotationY = 0;
+    let rotationZ = 0; // Можно оставить 0, или крутить если хочется
 
-    // Функция поворота точки
+    /* Управление мышью */
+    let isDragging = false;
+    let lastMouseX = 0;
+    let lastMouseY = 0;
+
+    canvas.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      lastMouseX = e.clientX;
+      lastMouseY = e.clientY;
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - lastMouseX;
+      const dy = e.clientY - lastMouseY;
+
+      // Поворот вокруг Y от dx
+      rotationY += dx * 0.01;
+      // Поворот вокруг X от dy
+      rotationX += dy * 0.01;
+
+      lastMouseX = e.clientX;
+      lastMouseY = e.clientY;
+    });
+
+    canvas.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+    canvas.addEventListener('mouseleave', () => {
+      isDragging = false;
+    });
+
+    /* Функция вращения точки вокруг X, Y, Z */
     function rotate(point, angleX, angleY, angleZ) {
-      let {x, y, z} = point;
+      let { x, y, z } = point;
+
       // Поворот вокруг X
       let cos = Math.cos(angleX), sin = Math.sin(angleX);
       let y1 = y * cos - z * sin;
       let z1 = y * sin + z * cos;
-      y = y1; z = z1;
+      y = y1;
+      z = z1;
+
       // Поворот вокруг Y
       cos = Math.cos(angleY); sin = Math.sin(angleY);
       let x1 = x * cos + z * sin;
       let z2 = -x * sin + z * cos;
-      x = x1; z = z2;
-      // Поворот вокруг Z
+      x = x1;
+      z = z2;
+
+      // Поворот вокруг Z (если нужен)
       cos = Math.cos(angleZ); sin = Math.sin(angleZ);
       let x2 = x * cos - y * sin;
       let y2 = x * sin + y * cos;
-      x = x2; y = y2;
+      x = x2;
+      y = y2;
+
       return { x, y, z, char: point.char };
     }
 
-    // Функция перспективной проекции
+    /* Перспективная проекция */
     function project(point) {
-      const focalLength = 500; // Расстояние до наблюдателя
+      const focalLength = 500; // Расстояние "камеры"
       const scale = focalLength / (focalLength + point.z);
       return {
         x: point.x * scale + canvas.width / 2,
@@ -69,36 +177,29 @@
       };
     }
 
+    /* Основная функция рендера */
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Для каждой точки:
-      for (let point of points) {
-        const rotated = rotate(point, angleX, angleY, angleZ);
+
+      for (let p of points) {
+        const rotated = rotate(p, rotationX, rotationY, rotationZ);
         const proj = project(rotated);
-        
-        // Рассчитываем фактор яркости:
-        // При z = (zOffset - radius) (то есть 200) – точка ближе, фактор = 1 (pure white)
-        // При z = (zOffset + radius) (то есть 600) – точка дальше, фактор = 0 (серый)
+
+        // Рассчитываем яркость на основе z
         const brightnessFactor = 1 - ((rotated.z - (zOffset - radius)) / (2 * radius));
-        // Интерполируем между 128 (серый) и 255 (белый)
         const shade = Math.floor(128 + brightnessFactor * 127);
-        
+
         ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
         ctx.font = "16px monospace";
-        ctx.fillText(point.char, proj.x, proj.y);
+        ctx.fillText(p.char, proj.x, proj.y);
       }
-      
-      // Обновляем углы для вращения
-      angleX += 0.01;
-      angleY += 0.01;
-      angleZ += 0.01;
-      
+
       requestAnimationFrame(draw);
     }
 
     draw();
 
+    /* Обработка ресайза окна */
     window.addEventListener('resize', () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -106,4 +207,3 @@
   </script>
 </body>
 </html>
-
