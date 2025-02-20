@@ -2,55 +2,43 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>3D ANIMATED SPHERE</title>
+  <!-- viewport-fit=cover позволяет использовать safe area -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>3D Animated Sphere</title>
   <style>
-    /* Сброс базовых стилей */
+    /* Сброс стилей */
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
+    html, body {
+      width: 100%;
+      height: 100%;
+    }
     body {
+      font-family: monospace;
       background: black;
       color: white;
-      font-family: monospace;
       overflow: hidden;
-      width: 100vw;
-      height: 100vh;
-      position: relative;
     }
 
-    /* Переключатель языка (RU/ENG) — располагается наверху справа */
-    .lang-selector {
-      position: absolute;
-      top: 60px;
-      right: 20px;
-      font-family: monospace;
-    }
-    .lang-selector button {
-      background: transparent;
-      border: 1px solid white;
-      color: white;
-      padding: 5px 10px;
-      margin-left: 5px;
-      cursor: pointer;
-      transition: background 0.3s, color 0.3s;
-    }
-    .lang-selector button:hover {
-      background: white;
-      color: black;
+    /* Основной контейнер — flex, чтобы распределить информационный блок и canvas */
+    .container {
+      display: flex;
+      flex-direction: row;
+      height: 100vh;
+      width: 100vw;
     }
 
     /* Информационный блок (левая колонка) */
     .info-container {
-      position: absolute;
-      top: 80px;
-      left: 20px;
-      max-width: 300px;
-      font-family: monospace;
-    }
-    .info-block {
-      margin-bottom: 20px;
+      flex: 0 0 300px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
     }
     .info-block h2 {
       font-size: 20px;
@@ -61,22 +49,59 @@
       font-size: 16px;
       line-height: 1.5;
     }
-    /* По умолчанию отображается русская версия */
-    .eng {
-      display: none;
+    .info-block a {
+      color: white;
+      text-decoration: underline;
     }
 
-    /* Canvas по центру */
-    #canvas {
+    /* Языковой переключатель — размещаем его в правом верхнем углу страницы */
+    .lang-switcher {
+      position: absolute;
+      top: env(safe-area-inset-top, 10px);
+      right: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    .lang-switcher button {
+      background: transparent;
+      border: 1px solid white;
+      color: white;
+      padding: 5px 10px;
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s;
+    }
+    .lang-switcher button:hover {
+      background: white;
+      color: black;
+    }
+
+    /* Контейнер для canvas — занимает оставшееся пространство */
+    .canvas-container {
+      flex: 1 1 auto;
+      position: relative;
+    }
+    .canvas-container canvas {
+      width: 100%;
+      height: 100%;
       display: block;
-      margin: 0 auto;
     }
 
-    /* Адаптив: для узких экранов корректируем info-container и lang-selector */
-    @media screen and (max-width: 600px) {
+    /* Медиазапрос для узких экранов: переключение на колонку */
+    @media (max-width: 600px) {
+      .container {
+        flex-direction: column;
+      }
       .info-container {
-        left: 10px;
-        right: 10px;
+        flex: 0 0 auto;
+        width: 100%;
+        max-height: 200px;
+      }
+    }
+
+    /* Медиазапрос по высоте: корректировка отступов и размеров шрифтов */
+    @media (max-height: 450px) {
+      .info-container {
+        padding: 10px;
       }
       .info-block h2 {
         font-size: 18px;
@@ -84,62 +109,58 @@
       .info-block p {
         font-size: 14px;
       }
-      .lang-selector {
-        top: 50px;
-        right: 10px;
-      }
     }
   </style>
 </head>
 <body>
-
-  <!-- Переключатель языка (RU/ENG) -->
-  <div class="lang-selector">
+  <!-- Языковой переключатель (RU/ENG) -->
+  <div class="lang-switcher">
     <button id="btn-ru">RU</button>
     <button id="btn-eng">ENG</button>
   </div>
+  
+  <!-- Основной контейнер -->
+  <div class="container">
+    <!-- Информационный блок (левая колонка) -->
+    <div class="info-container">
+      <!-- Русская версия -->
+      <div class="info-block ru">
+        <h2>Что это</h2>
+        <p>
+          Это псевдографическая симуляция, где каждый символ означает 3D-точку.
+          Код написан Chat GPT. Симуляция интерактивная и с ней можно взаимодействовать.
+        </p>
+      </div>
+      <div class="info-block ru">
+        <h2>Сделано</h2>
+        <p>
+          <a href="https://www.instagram.com/nmk_one/" target="_blank">Instagram</a>
+        </p>
+      </div>
+      <!-- Английская версия -->
+      <div class="info-block eng">
+        <h2>What is it</h2>
+        <p>
+          This is a pseudographics simulation where each character represents a 3D point.
+          Code written by Chat GPT. The simulation is interactive and can be controlled.
+        </p>
+      </div>
+      <div class="info-block eng">
+        <h2>Made by</h2>
+        <p>
+          <a href="https://www.instagram.com/nmk_one/" target="_blank">Instagram</a>
+        </p>
+      </div>
+    </div>
 
-  <!-- Информационный блок (левая колонка) -->
-  <div class="info-container">
-    <!-- Русская версия -->
-    <div class="info-block ru">
-      <h2>Что это</h2>
-      <p>
-        Это псевдографическая симуляция, где каждый символ означает 3D-точку. 
-        Код написан Chat GPT. Симуляция интерактивная и с ней можно взаимодействовать.
-      </p>
-    </div>
-    <div class="info-block ru">
-      <h2>Сделано</h2>
-      <p>
-        <a href="https://www.instagram.com/nmk_one/" target="_blank" style="color: white; text-decoration: underline;">
-          Instagram
-        </a>
-      </p>
-    </div>
-    <!-- Английская версия -->
-    <div class="info-block eng">
-      <h2>What is it</h2>
-      <p>
-        This is a pseudographics simulation where each character represents a 3D point.
-        Code written by Chat GPT. The simulation is interactive and can be controlled.
-      </p>
-    </div>
-    <div class="info-block eng">
-      <h2>Made by</h2>
-      <p>
-        <a href="https://www.instagram.com/nmk_one/" target="_blank" style="color: white; text-decoration: underline;">
-          Instagram
-        </a>
-      </p>
+    <!-- Контейнер для canvas -->
+    <div class="canvas-container">
+      <canvas id="canvas"></canvas>
     </div>
   </div>
 
-  <!-- Canvas для ASCII-сферы -->
-  <canvas id="canvas"></canvas>
-
   <script>
-    // Переключение языков
+    // Переключатель языков
     const btnRU = document.getElementById('btn-ru');
     const btnENG = document.getElementById('btn-eng');
     function showRU() {
@@ -152,20 +173,30 @@
     }
     btnRU.addEventListener('click', showRU);
     btnENG.addEventListener('click', showENG);
-    // По умолчанию показываем русский язык
+    // По умолчанию показываем русский
     showRU();
 
-    /* Код для симуляции ASCII-сферы */
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    // Настройка canvas: подстраиваем размеры под контейнер
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    function resizeCanvas() {
+      const container = document.querySelector('.canvas-container');
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
 
+    // ASCII-сфера
     const numPoints = 1000;
-    const radius = 200;
+    let radius = 200;
+    // Корректируем радиус, если экран маленький
+    if(window.innerWidth < 600 || window.innerHeight < 450){
+      radius = 100;
+    }
     const zOffset = 400;
     const points = [];
-    for (let i = 0; i < numPoints; i++) {
+    for(let i = 0; i < numPoints; i++){
       const theta = Math.acos(2 * Math.random() - 1);
       const phi = 2 * Math.PI * Math.random();
       const x = radius * Math.sin(theta) * Math.cos(phi);
@@ -178,17 +209,16 @@
     let rotationX = 0;
     let rotationY = 0;
     let rotationZ = 0;
-
     let isDragging = false;
     let lastMouseX = 0;
     let lastMouseY = 0;
 
-    canvas.addEventListener('mousedown', (e) => {
+    canvas.addEventListener('mousedown', e => {
       isDragging = true;
       lastMouseX = e.clientX;
       lastMouseY = e.clientY;
     });
-    canvas.addEventListener('mousemove', (e) => {
+    canvas.addEventListener('mousemove', e => {
       if (!isDragging) return;
       const dx = e.clientX - lastMouseX;
       const dy = e.clientY - lastMouseY;
@@ -197,33 +227,23 @@
       lastMouseX = e.clientX;
       lastMouseY = e.clientY;
     });
-    canvas.addEventListener('mouseup', () => {
-      isDragging = false;
-    });
-    canvas.addEventListener('mouseleave', () => {
-      isDragging = false;
-    });
+    canvas.addEventListener('mouseup', () => { isDragging = false; });
+    canvas.addEventListener('mouseleave', () => { isDragging = false; });
 
     function rotate(point, angleX, angleY, angleZ) {
       let { x, y, z } = point;
       let cos = Math.cos(angleX), sin = Math.sin(angleX);
       let y1 = y * cos - z * sin;
       let z1 = y * sin + z * cos;
-      y = y1;
-      z = z1;
-
+      y = y1; z = z1;
       cos = Math.cos(angleY); sin = Math.sin(angleY);
       let x1 = x * cos + z * sin;
       let z2 = -x * sin + z * cos;
-      x = x1;
-      z = z2;
-
+      x = x1; z = z2;
       cos = Math.cos(angleZ); sin = Math.sin(angleZ);
       let x2 = x * cos - y * sin;
       let y2 = x * sin + y * cos;
-      x = x2;
-      y = y2;
-
+      x = x2; y = y2;
       return { x, y, z, char: point.char };
     }
 
@@ -238,27 +258,22 @@
 
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (let p of points) {
+      for (const p of points) {
         const rotated = rotate(p, rotationX, rotationY, rotationZ);
         const proj = project(rotated);
         const brightnessFactor = 1 - ((rotated.z - (zOffset - radius)) / (2 * radius));
         const shade = Math.floor(128 + brightnessFactor * 127);
-        ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
+        ctx.fillStyle = `rgb(${shade},${shade},${shade})`;
         ctx.font = "16px monospace";
         ctx.fillText(p.char, proj.x, proj.y);
       }
-      // Автовращение – хаотичные приращения
+      // Автовращение — хаотичные приращения
       rotationX += 0.005;
       rotationY += 0.01;
       rotationZ += 0.003;
       requestAnimationFrame(draw);
     }
     draw();
-
-    window.addEventListener('resize', () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    });
   </script>
 </body>
 </html>
