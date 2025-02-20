@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>ASCII-сфера</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: black; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const points = [];
+    const numPoints = 1000;    // Количество точек
+    const radius = 200;        // Радиус сферы
+    const zOffset = 400;       // Смещение сферы по оси Z
+
+    // Генерируем точки на сфере
+    for (let i = 0; i < numPoints; i++) {
+      const theta = Math.acos(2 * Math.random() - 1); // от 0 до π
+      const phi = 2 * Math.PI * Math.random();          // от 0 до 2π
+      const x = radius * Math.sin(theta) * Math.cos(phi);
+      const y = radius * Math.sin(theta) * Math.sin(phi);
+      const z = radius * Math.cos(theta) + zOffset;
+      // Присваиваем случайное число от 0 до 9
+      const char = Math.floor(Math.random() * 10);
+      points.push({ x, y, z, char });
+    }
+
+    // Начальные углы поворота
+    let angleX = 0;
+    let angleY = 0;
+    let angleZ = 0;
+
+    // Функция поворота точки
+    function rotate(point, angleX, angleY, angleZ) {
+      let {x, y, z} = point;
+      // Поворот вокруг X
+      let cos = Math.cos(angleX), sin = Math.sin(angleX);
+      let y1 = y * cos - z * sin;
+      let z1 = y * sin + z * cos;
+      y = y1; z = z1;
+      // Поворот вокруг Y
+      cos = Math.cos(angleY); sin = Math.sin(angleY);
+      let x1 = x * cos + z * sin;
+      let z2 = -x * sin + z * cos;
+      x = x1; z = z2;
+      // Поворот вокруг Z
+      cos = Math.cos(angleZ); sin = Math.sin(angleZ);
+      let x2 = x * cos - y * sin;
+      let y2 = x * sin + y * cos;
+      x = x2; y = y2;
+      return { x, y, z, char: point.char };
+    }
+
+    // Функция перспективной проекции
+    function project(point) {
+      const focalLength = 500; // Расстояние до наблюдателя
+      const scale = focalLength / (focalLength + point.z);
+      return {
+        x: point.x * scale + canvas.width / 2,
+        y: point.y * scale + canvas.height / 2
+      };
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Для каждой точки:
+      for (let point of points) {
+        const rotated = rotate(point, angleX, angleY, angleZ);
+        const proj = project(rotated);
+        
+        // Рассчитываем фактор яркости:
+        // При z = (zOffset - radius) (то есть 200) – точка ближе, фактор = 1 (pure white)
+        // При z = (zOffset + radius) (то есть 600) – точка дальше, фактор = 0 (серый)
+        const brightnessFactor = 1 - ((rotated.z - (zOffset - radius)) / (2 * radius));
+        // Интерполируем между 128 (серый) и 255 (белый)
+        const shade = Math.floor(128 + brightnessFactor * 127);
+        
+        ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
+        ctx.font = "16px monospace";
+        ctx.fillText(point.char, proj.x, proj.y);
+      }
+      
+      // Обновляем углы для вращения
+      angleX += 0.01;
+      angleY += 0.01;
+      angleZ += 0.01;
+      
+      requestAnimationFrame(draw);
+    }
+
+    draw();
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+  </script>
+</body>
+</html>
+
