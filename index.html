@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>UNIVERSE DESIGN - Mobile + Mouse</title>
+  <title>Cube of Lines - UNIVERSE DESIGN</title>
   <style>
     * {
       margin: 0; padding: 0; box-sizing: border-box;
@@ -22,25 +22,31 @@
 <body>
 <canvas id="canvas"></canvas>
 <script>
+  // Настройка canvas
   const canvas = document.getElementById("canvas");
   const ctx = canvas.getContext("2d");
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  // ====== ПАРАМЕТРЫ КУБА ======
-  const letters = "UNIVERSEDESIGN";  // 14 символов
-  const cubeSize = 200;              // ±100 по x,y,z
-  const half = cubeSize / 2;         // 100
-  const topZ = +half;                // +100
-  const botZ = -half;                // -100
-  const linesX = 14;                 // нитей по X
-  const linesY = 14;                 // нитей по Y
-  const pointsPerLine = 20;          // точек на каждой нити
+  // ====== ПАРАМЕТРЫ ======
+  // Строка с названием (14 символов без пробелов)
+  const letters = "UNIVERSEDESIGN";  
+  // Размер куба (400 => координаты от -200 до +200)
+  const cubeSize = 400;
+  const half = cubeSize / 2; // 200
+  // Количество нитей (по X и Y)
+  const linesX = 6;
+  const linesY = 6;
+  // Точек на каждой нити
+  const pointsPerLine = 15;
+  // Для куба: z от +half до -half
+  const topZ = +half;   // +200
+  const botZ = -half;   // -200
 
-  // ====== МАССИВ ТОЧЕК ======
+  // Массив точек
   let points = [];
 
-  // Случайная позиция (разброс)
+  // Функция для генерации случайной разбросанной позиции (±1000)
   function randomScatter() {
     return {
       x: (Math.random() - 0.5) * 2000,
@@ -49,7 +55,7 @@
     };
   }
 
-  // Циклический выбор букв
+  // Циклическая выдача буквы для нити
   let letterIndex = 0;
   function nextLetter() {
     const ch = letters[letterIndex % letters.length];
@@ -57,70 +63,77 @@
     return ch;
   }
 
-  // Генерируем линии вдоль оси Z (от +half до -half)
+  // Генерируем нити: 6×6 нитей, каждая – 15 точек вдоль оси Z (от topZ до botZ)
   for (let i = 0; i < linesX; i++) {
     const fracX = i / (linesX - 1);
     const xVal = -half + fracX * cubeSize;
     for (let j = 0; j < linesY; j++) {
       const fracY = j / (linesY - 1);
       const yVal = -half + fracY * cubeSize;
-      // Буква для всей нити
+      // Для каждой нити выбираем букву
       const letter = nextLetter();
-      // Нить из pointsPerLine точек
       for (let k = 0; k < pointsPerLine; k++) {
         const fracZ = k / (pointsPerLine - 1);
-        const zVal = topZ * (1 - fracZ) + botZ * fracZ; // от +100 до -100
-        // Позиция в кубе
+        const zVal = topZ * (1 - fracZ) + botZ * fracZ;
         const cubePos = { x: xVal, y: yVal, z: zVal };
-        // Позиция в разбросе
         const scatterPos = randomScatter();
         points.push({ cubePos, scatterPos, char: letter });
       }
     }
   }
 
-  // Параметр t (0..1): 0 = куб, 1 = хаос
-  let tParam = 1; // начинаем с хаоса
-  // Вращение
+  // Параметр t: 0 = куб собран, 1 = разбросан
+  let tParam = 1; // начинаем с хаотичного разброса
+
+  // Вращение куба (начальные углы)
   let rotationX = 0;
   let rotationY = 0;
 
-  // ====== УПРАВЛЕНИЕ: МЫШЬ + ТАЧ ======
+  // ====== УПРАВЛЕНИЕ (МЫШЬ И TOUCH) ======
   let isDragging = false;
   let lastX = 0, lastY = 0;
-
-  // Храним точку начала вертикального движения (для «протолкнуть вверх»)
-  let gatherStartY = 0;
+  let startT = tParam; // сохраняем tParam при начале drag
+  let dragStartY = 0;  // для вертикального движения (сбор/разброс)
   let gatherTriggered = false;
+  let scatterTriggered = false;
 
   function startPointer(x, y) {
     isDragging = true;
     lastX = x;
     lastY = y;
-    gatherStartY = y;
+    dragStartY = y;
+    startT = tParam;
+    gatherTriggered = false;
+    scatterTriggered = false;
   }
   function movePointer(x, y) {
     if (!isDragging) return;
     let dx = x - lastX;
     let dy = y - lastY;
+    // Ротация: горизонтальный drag меняет rotationY, вертикальный rotationX
     rotationY += dx * 0.01;
     rotationX += dy * 0.01;
     lastX = x;
     lastY = y;
-
-    // Если ещё не триггерили сбор и tParam>0.5,
-    // и «протолкнули вверх» на 100px
-    let dVert = y - gatherStartY;
-    if (!gatherTriggered && dVert < -100 && tParam > 0.5) {
+    
+    // Определяем вертикальное смещение от начала drag
+    let totalDy = y - dragStartY;
+    // Если двигаем вверх (totalDy < -100) и куб в хаосе (tParam > 0.5), запускаем сбор куба
+    if (!gatherTriggered && totalDy < -100 && tParam > 0.5) {
       gatherTriggered = true;
       animateGather();
+    }
+    // Если двигаем вниз (totalDy > 100) и куб собран (tParam < 0.5), запускаем разброс куба
+    if (!scatterTriggered && totalDy > 100 && tParam < 0.5) {
+      scatterTriggered = true;
+      animateScatter();
     }
   }
   function endPointer() {
     isDragging = false;
   }
 
-  // События мыши
+  // Мышь
   canvas.addEventListener("mousedown", (e) => {
     startPointer(e.clientX, e.clientY);
   });
@@ -130,7 +143,7 @@
   canvas.addEventListener("mouseup", endPointer);
   canvas.addEventListener("mouseleave", endPointer);
 
-  // События touch (для мобильных)
+  // Touch (для мобильных)
   canvas.addEventListener("touchstart", (e) => {
     e.preventDefault();
     if (e.touches.length > 0) {
@@ -140,7 +153,6 @@
   }, { passive: false });
   canvas.addEventListener("touchmove", (e) => {
     e.preventDefault();
-    if (!isDragging) return;
     if (e.touches.length > 0) {
       let touch = e.touches[0];
       movePointer(touch.clientX, touch.clientY);
@@ -151,7 +163,7 @@
     endPointer();
   }, { passive: false });
 
-  // ====== КОЛЁСИКО (для десктопа, если нужно «ручное» tParam) ======
+  // Колёсико (desktop) для ручного управления tParam (расброс/сбор)
   canvas.addEventListener("wheel", (e) => {
     e.preventDefault();
     let sensitivity = 0.0005;
@@ -160,39 +172,65 @@
     tParam = newT;
   }, { passive: false });
 
-  // ====== ФУНКЦИЯ АНИМАЦИИ СБОРКИ (1->0) ======
+  // ====== АНИМАЦИЯ СБОРКИ (t: 1 -> 0) ======
   function animateGather() {
     const startTime = performance.now();
     const duration = 2000; // 2 секунды
-    const startT = tParam; // обычно 1
+    const initT = tParam;
     function step() {
       let now = performance.now();
       let elapsed = now - startTime;
       let alpha = elapsed / duration;
       if (alpha >= 1) {
-        tParam = 0; // куб собран
+        tParam = 0;
       } else {
-        tParam = startT * (1 - alpha);
+        tParam = initT * (1 - alpha);
+        requestAnimationFrame(step);
+      }
+    }
+    requestAnimationFrame(step);
+  }
+  
+  // ====== АНИМАЦИЯ РАЗБРОСА (t: 0 -> 1) ======
+  function animateScatter() {
+    const startTime = performance.now();
+    const duration = 2000; // 2 секунды
+    const initT = tParam;
+    function step() {
+      let now = performance.now();
+      let elapsed = now - startTime;
+      let alpha = elapsed / duration;
+      if (alpha >= 1) {
+        tParam = 1;
+      } else {
+        tParam = initT + (1 - initT) * alpha;
         requestAnimationFrame(step);
       }
     }
     requestAnimationFrame(step);
   }
 
-  // ====== АВТОРОТАЦИЯ ======
+  // ====== АВТОРОТАЦИЯ (если пользователь не взаимодействует) ======
   let autoRotateSpeed = 0.002;
 
-  // ====== 3D ФУНКЦИИ ======
-  function rotate3D(x, y, z, angleX, angleY) {
+  // ====== 3D ВРАЩЕНИЕ И ПРОЕКЦИЯ ======
+  function rotate3D(x, y, z, angleX, angleY, angleZ=0) {
     // Вращение вокруг X
     let cosX = Math.cos(angleX), sinX = Math.sin(angleX);
     let y1 = y * cosX - z * sinX;
     let z1 = y * sinX + z * cosX;
+    y = y1; z = z1;
     // Вращение вокруг Y
     let cosY = Math.cos(angleY), sinY = Math.sin(angleY);
-    let x2 = x * cosY + z1 * sinY;
-    let z2 = -x * sinY + z1 * cosY;
-    return { x: x2, y: y1, z: z2 };
+    let x1 = x * cosY + z * sinY;
+    let z2 = -x * sinY + z * cosY;
+    x = x1; z = z2;
+    // Вращение вокруг Z (если нужно)
+    let cosZ = Math.cos(angleZ), sinZ = Math.sin(angleZ);
+    let x2 = x * cosZ - y * sinZ;
+    let y2 = x * sinZ + y * cosZ;
+    x = x2; y = y2;
+    return { x, y, z };
   }
   function project3D(x, y, z) {
     const focal = 500;
@@ -204,38 +242,36 @@
   }
 
   // ====== РЕНДЕР ======
-  let isUserInteracting = false;
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Автовращение, если пользователь не трогает (isDragging=false) и tParam>0
-    if (!isDragging && tParam > 0) {
+    
+    // Авто-вращение, если пользователь не взаимодействует
+    if (!isDragging) {
       rotationY += autoRotateSpeed;
     }
-
+    
     for (let p of points) {
-      // Интерполяция
+      // Интерполяция позиции: от собранного куба до разброса
       const x0 = (1 - tParam) * p.cubePos.x + tParam * p.scatterPos.x;
       const y0 = (1 - tParam) * p.cubePos.y + tParam * p.scatterPos.y;
       const z0 = (1 - tParam) * p.cubePos.z + tParam * p.scatterPos.z;
-      // Вращение
-      const r = rotate3D(x0, y0, z0, rotationX, rotationY);
-      // Проекция
-      const proj = project3D(r.x, r.y, r.z);
-      // Яркость
-      let brightnessFactor = 1 - (r.z + 1000) / 2000;
+      // Применяем вращение по всем осям
+      const rotated = rotate3D(x0, y0, z0, rotationX, rotationY);
+      // Проекция в 2D
+      const proj = project3D(rotated.x, rotated.y, rotated.z);
+      // Вычисляем яркость (упрощённо)
+      let brightnessFactor = 1 - ((rotated.z - botZ) / (cubeSize));
       brightnessFactor = Math.max(0, Math.min(1, brightnessFactor));
       const shade = Math.floor(128 + brightnessFactor * 127);
       ctx.fillStyle = `rgb(${shade},${shade},${shade})`;
       ctx.font = "14px monospace";
       ctx.fillText(p.char, proj.x, proj.y);
     }
-
+    
     requestAnimationFrame(draw);
   }
   requestAnimationFrame(draw);
 
-  // При изменении размеров
   window.addEventListener("resize", () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
