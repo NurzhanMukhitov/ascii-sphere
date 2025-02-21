@@ -4,13 +4,14 @@
   <meta charset="UTF-8">
   <title>UNIVERSEDESIGN - 14x14 Cube</title>
   <style>
-    /* Подключаем кастомный шрифт OneDay */
+    /* Подключаем кастомный шрифт OneDay из файла ONEDAY.woff */
     @font-face {
       font-family: 'OneDay';
-      src: url('fonts/ONEDAY.ttf') format('truetype');
+      src: url('fonts/ONEDAY.woff') format('woff');
       font-weight: normal;
       font-style: normal;
     }
+
     /* Базовые стили */
     * {
       margin: 0;
@@ -50,7 +51,6 @@
   const pointsPerLine = 10;         // точек на каждой нити
   const topZ = +half;               // +200 (верх)
   const botZ = -half;               // -200 (низ)
-  // При сборке (t=0) — куб, при хаосе (t=1) — разброс
 
   // ======= МАССИВ ТОЧЕК =======
   // Каждая точка: { cubePos, scatterPos, char, i, j }
@@ -66,8 +66,8 @@
   }
 
   // Генерируем нити:
-  // Верхняя грань – j=13 (y=+200) будет отображать слово UNIVERSEDESIGN,
-  // Остальные точки – случайные буквы.
+  // Верхняя грань – j = 13 (y = +200) будет отображать слово UNIVERSEDESIGN,
+  // остальные точки – случайные буквы.
   for (let j = 0; j < linesY; j++) {
     const fracY = j / (linesY - 1);
     const yVal = -half + fracY * cubeSize; // от -200 до +200
@@ -175,7 +175,7 @@
   }, { passive: false });
   
   // ======= АНИМАЦИЯ СБОРКИ (t: 1 -> 0) =======
-  // Убираем 3-секундную паузу
+  // Без паузы, просто плавный переход за 2 секунды
   function animateGather() {
     const startTime = performance.now();
     const duration = 2000; // 2 секунды
