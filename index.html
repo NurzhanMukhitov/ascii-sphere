@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>3D ANIMATED SPHERE</title>
+  <title>3D Sphere Lines</title>
   <style>
     /* Сброс базовых стилей */
     * {
@@ -14,182 +14,77 @@
       background: black;
       color: white;
       font-family: monospace;
-      overflow: hidden;
+      overflow: hidden; /* скрываем скролл */
       width: 100vw;
       height: 100vh;
       position: relative;
     }
-    
-    /* Переключатель языка (RU/ENG) – с отступом сверху */
-    .lang-selector {
-      position: absolute;
-      top: 80px;
-      right: 20px;
-    }
-    .lang-selector button {
-      background: transparent;
-      border: 1px solid white;
-      color: white;
-      padding: 5px 10px;
-      margin-left: 5px;
-      cursor: pointer;
-      transition: background 0.3s, color 0.3s;
-    }
-    .lang-selector button:hover {
-      background: white;
-      color: black;
-    }
-    
-    /* Информационный блок (левая колонка) – с отступом сверху */
-    .info-container {
-      position: absolute;
-      top: 80px;
-      left: 20px;
-      max-width: 300px;
-      font-family: monospace;
-    }
-    .info-block {
-      margin-bottom: 20px;
-    }
-    .info-block h2 {
-      font-size: 20px;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-    .info-block p {
-      font-size: 16px;
-      line-height: 1.5;
-    }
-    /* По умолчанию отображается русская версия */
-    .eng {
-      display: none;
-    }
-    
     /* Canvas по центру */
     #canvas {
       display: block;
       margin: 0 auto;
     }
-    
-    /* Адаптив: для узких экранов корректируем отступы */
-    @media screen and (max-width: 600px) {
-      .info-container {
-        left: 10px;
-        right: 10px;
-      }
-      .info-block h2 {
-        font-size: 18px;
-      }
-      .info-block p {
-        font-size: 14px;
-      }
-      .lang-selector {
-        top: 70px;
-        right: 10px;
-      }
-    }
   </style>
 </head>
 <body>
-  
-  <!-- Переключатель языка (RU/ENG) -->
-  <div class="lang-selector">
-    <button id="btn-ru">RU</button>
-    <button id="btn-eng">ENG</button>
-  </div>
-  
-  <!-- Информационный блок (левая колонка) -->
-  <div class="info-container">
-    <!-- Русская версия -->
-    <div class="info-block ru">
-      <h2>Что это</h2>
-      <p>
-        Это псевдографическая симуляция, где каждый символ означает 3D-точку.
-        Код написан Chat GPT. Симуляция интерактивная и с ней можно взаимодействовать.
-      </p>
-    </div>
-    <div class="info-block ru">
-      <h2>Сделано</h2>
-      <p>
-        <a href="https://www.instagram.com/nmk_one/" target="_blank" style="color: white; text-decoration: underline;">
-          Instagram
-        </a>
-      </p>
-    </div>
-    <!-- Английская версия -->
-    <div class="info-block eng">
-      <h2>What is it</h2>
-      <p>
-        This is a pseudographics simulation where each character represents a 3D point.
-        Code written by Chat GPT. The simulation is interactive and can be controlled.
-      </p>
-    </div>
-    <div class="info-block eng">
-      <h2>Made by</h2>
-      <p>
-        <a href="https://www.instagram.com/nmk_one/" target="_blank" style="color: white; text-decoration: underline;">
-          Instagram
-        </a>
-      </p>
-    </div>
-  </div>
-  
-  <!-- Canvas для ASCII-сферы -->
   <canvas id="canvas"></canvas>
-  
+
   <script>
-    // Переключение языков
-    const btnRU = document.getElementById('btn-ru');
-    const btnENG = document.getElementById('btn-eng');
-    function showRU() {
-      document.querySelectorAll('.ru').forEach(el => el.style.display = 'block');
-      document.querySelectorAll('.eng').forEach(el => el.style.display = 'none');
-    }
-    function showENG() {
-      document.querySelectorAll('.ru').forEach(el => el.style.display = 'none');
-      document.querySelectorAll('.eng').forEach(el => el.style.display = 'block');
-    }
-    btnRU.addEventListener('click', showRU);
-    btnENG.addEventListener('click', showENG);
-    // По умолчанию показываем русский язык
-    showRU();
-    
-    /* Код для симуляции ASCII-сферы */
+    // Настраиваем canvas
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    
-    const numPoints = 1000;
-    const radius = 200;
-    const zOffset = 400;
+
+    // Параметры сферы
+    const letters = "UNIVERSE DESIGN"; // 14 символов (включая пробел)
+    const numParallels = letters.length; // Сколько "линий" (параллелей) будет
+    const pointsPerParallel = 50;       // Точек на каждой параллели (чем больше, тем плотнее линия)
+    const radius = 200;                // Радиус сферы
+    const zOffset = 400;               // Смещение сферы по оси Z
+
+    // Массив точек
     const points = [];
-    // Используем строку с названием компании
-    const letters = "UNIVERSE DESIGN";
-    for (let i = 0; i < numPoints; i++) {
-      const theta = Math.acos(2 * Math.random() - 1);
-      const phi = 2 * Math.PI * Math.random();
-      const x = radius * Math.sin(theta) * Math.cos(phi);
-      const y = radius * Math.sin(theta) * Math.sin(phi);
-      const z = radius * Math.cos(theta) + zOffset;
-      // Выбираем случайный символ из letters
-      const char = letters[Math.floor(Math.random() * letters.length)];
-      points.push({ x, y, z, char });
+
+    // Генерируем параллели
+    // Каждая параллель i: lat меняется от -π/2 (юг) до +π/2 (север)
+    // Преобразуем i из [0..numParallels-1] в [-π/2..+π/2]
+    for (let i = 0; i < numParallels; i++) {
+      // Вычисляем угол широты lat
+      const lat = -Math.PI / 2 + (i / (numParallels - 1)) * Math.PI; 
+      // Берём символ из letters
+      const char = letters[i];
+
+      // По окружности (долготе) делаем pointsPerParallel точек
+      for (let j = 0; j < pointsPerParallel; j++) {
+        const lon = (j / pointsPerParallel) * 2 * Math.PI;
+        
+        // x, y, z в сферических координатах
+        const x = radius * Math.cos(lat) * Math.cos(lon);
+        const y = radius * Math.cos(lat) * Math.sin(lon);
+        const z = radius * Math.sin(lat) + zOffset;
+        
+        // Добавляем точку (с той же буквой char)
+        points.push({ x, y, z, char });
+      }
     }
-    
+
+    // Переменные вращения
     let rotationX = 0;
     let rotationY = 0;
     let rotationZ = 0;
-    
+
+    // Управление мышью
     let isDragging = false;
     let lastMouseX = 0;
     let lastMouseY = 0;
-    
+
     canvas.addEventListener('mousedown', (e) => {
       isDragging = true;
       lastMouseX = e.clientX;
       lastMouseY = e.clientY;
     });
+
     canvas.addEventListener('mousemove', (e) => {
       if (!isDragging) return;
       const dx = e.clientX - lastMouseX;
@@ -199,66 +94,75 @@
       lastMouseX = e.clientX;
       lastMouseY = e.clientY;
     });
+
     canvas.addEventListener('mouseup', () => { isDragging = false; });
     canvas.addEventListener('mouseleave', () => { isDragging = false; });
-    
+
+    // Функция вращения
     function rotate(point, angleX, angleY, angleZ) {
-      let { x, y, z } = point;
+      let { x, y, z, char } = point;
+
+      // Вращение вокруг X
       let cos = Math.cos(angleX), sin = Math.sin(angleX);
       let y1 = y * cos - z * sin;
       let z1 = y * sin + z * cos;
-      y = y1;
-      z = z1;
-    
+      y = y1; z = z1;
+
+      // Вращение вокруг Y
       cos = Math.cos(angleY); sin = Math.sin(angleY);
       let x1 = x * cos + z * sin;
       let z2 = -x * sin + z * cos;
-      x = x1;
-      z = z2;
-    
+      x = x1; z = z2;
+
+      // Вращение вокруг Z
       cos = Math.cos(angleZ); sin = Math.sin(angleZ);
       let x2 = x * cos - y * sin;
       let y2 = x * sin + y * cos;
-      x = x2;
-      y = y2;
-    
-      return { x, y, z, char: point.char };
+      x = x2; y = y2;
+
+      return { x, y, z, char };
     }
-    
+
+    // Перспективная проекция
     function project(point) {
-      const focalLength = 500;
+      const focalLength = 500; // "камера"
       const scale = focalLength / (focalLength + point.z);
       return {
         x: point.x * scale + canvas.width / 2,
         y: point.y * scale + canvas.height / 2
       };
     }
-    
+
+    // Анимация
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
       for (let p of points) {
+        // Вращаем точку
         const rotated = rotate(p, rotationX, rotationY, rotationZ);
+        // Проецируем
         const proj = project(rotated);
+
+        // Рассчитываем яркость
         const brightnessFactor = 1 - ((rotated.z - (zOffset - radius)) / (2 * radius));
         const shade = Math.floor(128 + brightnessFactor * 127);
+
         ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
         ctx.font = "16px monospace";
-        
-        // Эффект billboard: сохраняем контекст, переводим систему координат в проекционную точку и рисуем букву без поворота
-        ctx.save();
-        ctx.translate(proj.x, proj.y);
-        ctx.rotate(0);
-        ctx.fillText(p.char, 0, 0);
-        ctx.restore();
+        ctx.fillText(rotated.char, proj.x, proj.y);
       }
-      // Автовращение – хаотичные приращения
+
+      // Автовращение (если нужно «хаотично»)
       rotationX += 0.005;
       rotationY += 0.01;
       rotationZ += 0.003;
+
       requestAnimationFrame(draw);
     }
+
     draw();
-    
+
+    // При ресайзе окна подстраиваем canvas
     window.addEventListener('resize', () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
