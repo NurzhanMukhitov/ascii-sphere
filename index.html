@@ -19,8 +19,8 @@
       height: 100vh;
       position: relative;
     }
-
-    /* Переключатель языка (RU/ENG) – с отступом сверху для выравнивания */
+    
+    /* Переключатель языка (RU/ENG) – с отступом сверху */
     .lang-selector {
       position: absolute;
       top: 80px;
@@ -39,7 +39,7 @@
       background: white;
       color: black;
     }
-
+    
     /* Информационный блок (левая колонка) – с отступом сверху */
     .info-container {
       position: absolute;
@@ -64,13 +64,13 @@
     .eng {
       display: none;
     }
-
+    
     /* Canvas по центру */
     #canvas {
       display: block;
       margin: 0 auto;
     }
-
+    
     /* Адаптив: для узких экранов корректируем отступы */
     @media screen and (max-width: 600px) {
       .info-container {
@@ -91,13 +91,13 @@
   </style>
 </head>
 <body>
-
+  
   <!-- Переключатель языка (RU/ENG) -->
   <div class="lang-selector">
     <button id="btn-ru">RU</button>
     <button id="btn-eng">ENG</button>
   </div>
-
+  
   <!-- Информационный блок (левая колонка) -->
   <div class="info-container">
     <!-- Русская версия -->
@@ -133,10 +133,10 @@
       </p>
     </div>
   </div>
-
+  
   <!-- Canvas для ASCII-сферы -->
   <canvas id="canvas"></canvas>
-
+  
   <script>
     // Переключение языков
     const btnRU = document.getElementById('btn-ru');
@@ -153,38 +153,38 @@
     btnENG.addEventListener('click', showENG);
     // По умолчанию показываем русский язык
     showRU();
-
+    
     /* Код для симуляции ASCII-сферы */
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-
+    
     const numPoints = 1000;
     const radius = 200;
     const zOffset = 400;
     const points = [];
-    // Используем название компании, преобразованное в строку символов
-    const letters = "UNIVERSE DESIGN"; // можно заменить на нужный вариант
+    // Используем строку с названием компании
+    const letters = "UNIVERSE DESIGN";
     for (let i = 0; i < numPoints; i++) {
       const theta = Math.acos(2 * Math.random() - 1);
       const phi = 2 * Math.PI * Math.random();
       const x = radius * Math.sin(theta) * Math.cos(phi);
       const y = radius * Math.sin(theta) * Math.sin(phi);
       const z = radius * Math.cos(theta) + zOffset;
-      // Выбираем случайный символ из строки
+      // Выбираем случайный символ из letters
       const char = letters[Math.floor(Math.random() * letters.length)];
       points.push({ x, y, z, char });
     }
-
+    
     let rotationX = 0;
     let rotationY = 0;
     let rotationZ = 0;
-
+    
     let isDragging = false;
     let lastMouseX = 0;
     let lastMouseY = 0;
-
+    
     canvas.addEventListener('mousedown', (e) => {
       isDragging = true;
       lastMouseX = e.clientX;
@@ -199,13 +199,9 @@
       lastMouseX = e.clientX;
       lastMouseY = e.clientY;
     });
-    canvas.addEventListener('mouseup', () => {
-      isDragging = false;
-    });
-    canvas.addEventListener('mouseleave', () => {
-      isDragging = false;
-    });
-
+    canvas.addEventListener('mouseup', () => { isDragging = false; });
+    canvas.addEventListener('mouseleave', () => { isDragging = false; });
+    
     function rotate(point, angleX, angleY, angleZ) {
       let { x, y, z } = point;
       let cos = Math.cos(angleX), sin = Math.sin(angleX);
@@ -213,22 +209,22 @@
       let z1 = y * sin + z * cos;
       y = y1;
       z = z1;
-
+    
       cos = Math.cos(angleY); sin = Math.sin(angleY);
       let x1 = x * cos + z * sin;
       let z2 = -x * sin + z * cos;
       x = x1;
       z = z2;
-
+    
       cos = Math.cos(angleZ); sin = Math.sin(angleZ);
       let x2 = x * cos - y * sin;
       let y2 = x * sin + y * cos;
       x = x2;
       y = y2;
-
+    
       return { x, y, z, char: point.char };
     }
-
+    
     function project(point) {
       const focalLength = 500;
       const scale = focalLength / (focalLength + point.z);
@@ -237,7 +233,7 @@
         y: point.y * scale + canvas.height / 2
       };
     }
-
+    
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       for (let p of points) {
@@ -247,7 +243,13 @@
         const shade = Math.floor(128 + brightnessFactor * 127);
         ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
         ctx.font = "16px monospace";
-        ctx.fillText(p.char, proj.x, proj.y);
+        
+        // Эффект billboard: сохраняем контекст, переводим систему координат в проекционную точку и рисуем букву без поворота
+        ctx.save();
+        ctx.translate(proj.x, proj.y);
+        ctx.rotate(0);
+        ctx.fillText(p.char, 0, 0);
+        ctx.restore();
       }
       // Автовращение – хаотичные приращения
       rotationX += 0.005;
@@ -256,7 +258,7 @@
       requestAnimationFrame(draw);
     }
     draw();
-
+    
     window.addEventListener('resize', () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
