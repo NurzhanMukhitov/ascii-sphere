@@ -2,22 +2,16 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Cube Lines - UNIVERSE DESIGN</title>
+  <title>Cube of Lines - UNIVERSE DESIGN</title>
   <style>
-    /* Сброс базовых стилей */
     * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0; box-sizing: border-box;
     }
     body {
-      background: black;
-      color: white;
+      width: 100vw; height: 100vh;
+      background: black; color: white;
+      overflow: hidden; position: relative;
       font-family: monospace;
-      overflow: hidden;
-      width: 100vw;
-      height: 100vh;
-      position: relative;
     }
     canvas {
       display: block;
@@ -26,157 +20,142 @@
   </style>
 </head>
 <body>
-  <canvas id="canvas"></canvas>
+<canvas id="canvas"></canvas>
+<script>
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  // Параметры
+  const letters = "UNIVERSE DESIGN";  // строка букв
+  const cubeSize = 200;              // размер куба (по x и y от -100 до +100, z от -100 до +100)
+  const half = cubeSize / 2;         // 100
+  const topZ = +half;                // +100 (верхняя грань)
+  const botZ = -half;                // -100 (нижняя грань)
+  const linesX = 20;                 // сколько линий в направлении X
+  const linesY = 20;                 // сколько линий в направлении Y
+  const pointsPerLine = 30;          // сколько точек на каждой нити
+  const zOffset = 0;                 // смещение куба по оси Z (если нужно, можешь поставить +300)
   
-  <script>
-    // Настройка canvas
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
+  // Храним массив всех точек
+  let points = [];
+  // Параметр t: 0 = куб собран, 1 = полностью разбросан
+  let tParam = 0;
+
+  // 1) Генерируем «ниточки» (линии) вдоль оси Z
+  //    То есть для каждой (x,y) на "верхней" грани -> линия к (x,y) на "нижней" грани
+  //    Итого linesX × linesY линий
+
+  // Функция для выбора случайной scatter-позиции
+  function randomScatter() {
+    // Разброс ±1000 (настрой по вкусу)
+    return {
+      x: (Math.random() - 0.5) * 2000,
+      y: (Math.random() - 0.5) * 2000,
+      z: (Math.random() - 0.5) * 2000
+    };
+  }
+
+  // Функция для взятия буквы из letters (повтор циклически)
+  let letterIndex = 0;
+  function nextLetter() {
+    const ch = letters[letterIndex % letters.length];
+    letterIndex++;
+    return ch;
+  }
+
+  // Генерация линий
+  for (let i = 0; i < linesX; i++) {
+    // x от -half до +half
+    const fracX = i / (linesX - 1);
+    const xVal = -half + fracX * cubeSize;
+
+    for (let j = 0; j < linesY; j++) {
+      // y от -half до +half
+      const fracY = j / (linesY - 1);
+      const yVal = -half + fracY * cubeSize;
+
+      // Линия идёт от z=topZ до z=botZ
+      for (let k = 0; k < pointsPerLine; k++) {
+        const fracZ = k / (pointsPerLine - 1);
+        // Позиция в «собранном» состоянии (куб)
+        const zVal = topZ * (1 - fracZ) + botZ * fracZ;  // линейная интерполяция от topZ к botZ
+        // Добавляем смещение zOffset
+        const cubePos = { x: xVal, y: yVal, z: zVal + zOffset };
+        // Позиция в «разбросанном» состоянии
+        const scatterPos = randomScatter();
+        // Буква
+        const ch = nextLetter();
+        // Сохраняем
+        points.push({ cubePos, scatterPos, char: ch });
+      }
+    }
+  }
+
+  // 2) Функция проекции (простая перспектива)
+  function project3D(x, y, z) {
+    const focal = 500;    // фокальное расстояние (камера)
+    const scale = focal / (focal + z);
+    return {
+      x: x * scale + canvas.width / 2,
+      y: y * scale + canvas.height / 2
+    };
+  }
+
+  // 3) Отрисовка
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let p of points) {
+      // Интерполяция между cubePos и scatterPos
+      const x = (1 - tParam) * p.cubePos.x + tParam * p.scatterPos.x;
+      const y = (1 - tParam) * p.cubePos.y + tParam * p.scatterPos.y;
+      const z = (1 - tParam) * p.cubePos.z + tParam * p.scatterPos.z;
+      // Проекция
+      const proj = project3D(x, y, z);
+      // Яркость (зависит от z, можно менять логику)
+      const brightnessFactor = 1 - ((z - botZ) / (2 * half));
+      const shade = Math.floor(128 + brightnessFactor * 127);
+      ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
+      ctx.font = "14px monospace";
+      ctx.fillText(p.char, proj.x, proj.y);
+    }
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+
+  // 4) Управление мышью (вертикальный drag)
+  let isDragging = false;
+  let startY = 0, startT = 0;
+
+  canvas.addEventListener("mousedown", (e) => {
+    isDragging = true;
+    startY = e.clientY;
+    startT = tParam;
+  });
+
+  canvas.addEventListener("mousemove", (e) => {
+    if (!isDragging) return;
+    let dy = e.clientY - startY;
+    // Допустим, движением вверх увеличиваем tParam, вниз уменьшаем
+    // => dy < 0 => tParam больше
+    let sensitivity = 0.002; // подбери по вкусу
+    let newT = startT - dy * sensitivity;
+    // Ограничим [0..1]
+    newT = Math.max(0, Math.min(1, newT));
+    tParam = newT;
+  });
+
+  canvas.addEventListener("mouseup", () => { isDragging = false; });
+  canvas.addEventListener("mouseleave", () => { isDragging = false; });
+
+  // При изменении размеров окна
+  window.addEventListener('resize', () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    
-    // ================= ПАРАМЕТРЫ ==================
-    // Строка для букв (оставляем пробел, если нужен)
-    const letters = "UNIVERSE DESIGN";
-    // Размер куба (условные единицы)
-    const cubeSize = 50;
-    const halfCube = cubeSize / 2;
-    // Смещение куба по оси Z, чтобы он не был перед камерой
-    const zOffset = 400;
-    
-    // Количество нитей (линий) и точек на каждой нити
-    const numThreads = 100;       // всего нитей (можно увеличить для плотности)
-    const pointsPerThread = 20;   // точек на каждой нити
-    
-    // Массив для хранения данных по нитям
-    let threads = [];
-    
-    // Для каждой нити генерируем:
-    // - Начальную и конечную точку в состоянии "собрано" (в кубе)
-    // - Начальную и конечную точку в состоянии "разбросано" (случайные координаты)
-    for (let i = 0; i < numThreads; i++) {
-      // Генерируем случайные точки внутри куба (от -halfCube до +halfCube)
-      const cubeStart = {
-        x: -halfCube + Math.random() * cubeSize,
-        y: -halfCube + Math.random() * cubeSize,
-        z: -halfCube + Math.random() * cubeSize + zOffset
-      };
-      const cubeEnd = {
-        x: -halfCube + Math.random() * cubeSize,
-        y: -halfCube + Math.random() * cubeSize,
-        z: -halfCube + Math.random() * cubeSize + zOffset
-      };
-      // Для состояния "разбросано" выберем случайные координаты в диапазоне ±500
-      const scatterStart = {
-        x: (Math.random() - 0.5) * 1000,
-        y: (Math.random() - 0.5) * 1000,
-        z: (Math.random() - 0.5) * 1000
-      };
-      const scatterEnd = {
-        x: (Math.random() - 0.5) * 1000,
-        y: (Math.random() - 0.5) * 1000,
-        z: (Math.random() - 0.5) * 1000
-      };
-      threads.push({
-        cubeStart,
-        cubeEnd,
-        scatterStart,
-        scatterEnd
-      });
-    }
-    
-    // Генерируем точки вдоль нитей.
-    // Каждая нить будет состоять из pointsPerThread точек.
-    // Для упрощения будем назначать каждой нити одну букву, выбираем по циклу из letters.
-    let points = [];
-    for (let tIdx = 0; tIdx < threads.length; tIdx++) {
-      let thread = threads[tIdx];
-      // Выбираем букву для этой нити (циклически)
-      let letter = letters[tIdx % letters.length];
-      for (let i = 0; i < pointsPerThread; i++) {
-        let frac = i / (pointsPerThread - 1);
-        // Линейная интерполяция между cubeStart и cubeEnd для состояния "собрано"
-        let cubePos = {
-          x: thread.cubeStart.x * (1 - frac) + thread.cubeEnd.x * frac,
-          y: thread.cubeStart.y * (1 - frac) + thread.cubeEnd.y * frac,
-          z: thread.cubeStart.z * (1 - frac) + thread.cubeEnd.z * frac
-        };
-        // Линейная интерполяция для состояния "разбросано"
-        let scatterPos = {
-          x: thread.scatterStart.x * (1 - frac) + thread.scatterEnd.x * frac,
-          y: thread.scatterStart.y * (1 - frac) + thread.scatterEnd.y * frac,
-          z: thread.scatterStart.z * (1 - frac) + thread.scatterEnd.z * frac
-        };
-        points.push({ cubePos, scatterPos, char: letter });
-      }
-    }
-    
-    // Параметр интерполяции t: 0 = куб собран, 1 = все разбросаны.
-    let tParam = 0;
-    
-    // ================= Управление мышью =================
-    // Используем мышь для управления tParam (расстояние от точки нажатия)
-    let isDragging = false;
-    let startX = 0, startY = 0, startT = 0;
-    
-    canvas.addEventListener("mousedown", (e) => {
-      isDragging = true;
-      startX = e.clientX;
-      startY = e.clientY;
-      startT = tParam;
-    });
-    
-    canvas.addEventListener("mousemove", (e) => {
-      if (!isDragging) return;
-      let dx = e.clientX - startX;
-      let dy = e.clientY - startY;
-      // Используем евклидовую дистанцию для управления tParam (по всем осям)
-      let dist = Math.sqrt(dx * dx + dy * dy);
-      let sensitivity = 0.002; // Настраиваем чувствительность (подбери по вкусу)
-      let newT = startT + dist * sensitivity;
-      newT = Math.max(0, Math.min(1, newT));
-      tParam = newT;
-    });
-    
-    canvas.addEventListener("mouseup", () => { isDragging = false; });
-    canvas.addEventListener("mouseleave", () => { isDragging = false; });
-    
-    // ================= Проекция =================
-    // Простая перспективная проекция (фиксированный фокальный параметр)
-    function project3D(x, y, z) {
-      const focal = 500;
-      const scale = focal / (focal + z);
-      return {
-        x: x * scale + canvas.width / 2,
-        y: y * scale + canvas.height / 2
-      };
-    }
-    
-    // ================= Отрисовка =================
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      // Для каждой точки интерполируем позицию между кубом и разбросом
-      for (let p of points) {
-        let x = (1 - tParam) * p.cubePos.x + tParam * p.scatterPos.x;
-        let y = (1 - tParam) * p.cubePos.y + tParam * p.scatterPos.y;
-        let z = (1 - tParam) * p.cubePos.z + tParam * p.scatterPos.z;
-        let proj = project3D(x, y, z);
-        // Вычисляем яркость, можно настроить по желанию
-        const brightnessFactor = 1 - ((z - (zOffset - cubeSize/2)) / (2 * cubeSize));
-        const shade = Math.floor(128 + brightnessFactor * 127);
-        ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
-        ctx.font = "14px monospace";
-        ctx.fillText(p.char, proj.x, proj.y);
-      }
-      requestAnimationFrame(draw);
-    }
-    
-    draw();
-    
-    window.addEventListener('resize', () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    });
-  </script>
+  });
+</script>
 </body>
 </html>
