@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>3D Sphere Lines</title>
+  <title>3D Sphere - UNIVERSE DESIGN</title>
   <style>
     /* Сброс базовых стилей */
     * {
@@ -14,7 +14,7 @@
       background: black;
       color: white;
       font-family: monospace;
-      overflow: hidden; /* скрываем скролл */
+      overflow: hidden;
       width: 100vw;
       height: 100vh;
       position: relative;
@@ -28,63 +28,55 @@
 </head>
 <body>
   <canvas id="canvas"></canvas>
-
+  
   <script>
-    // Настраиваем canvas
+    // Настройка canvas
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
     // Параметры сферы
-    const letters = "UNIVERSE DESIGN"; // 14 символов (включая пробел)
-    const numParallels = letters.length; // Сколько "линий" (параллелей) будет
-    const pointsPerParallel = 50;       // Точек на каждой параллели (чем больше, тем плотнее линия)
-    const radius = 200;                // Радиус сферы
-    const zOffset = 400;               // Смещение сферы по оси Z
+    // Строка с названием компании (оставляем пробел, если он нужен)
+    const letters = "UNIVERSE DESIGN";  
+    // Количество параллелей равно количеству символов
+    const numParallels = letters.length;
+    // Количество точек на каждой параллели (чем больше, тем ровнее линия)
+    const pointsPerParallel = 50;
+    const radius = 200;         // Радиус сферы
+    const zOffset = 400;        // Смещение сферы по оси Z
 
-    // Массив точек
+    // Массив для хранения точек
     const points = [];
-
-    // Генерируем параллели
-    // Каждая параллель i: lat меняется от -π/2 (юг) до +π/2 (север)
-    // Преобразуем i из [0..numParallels-1] в [-π/2..+π/2]
+    // Генерируем точки: каждая параллель соответствует одному символу из letters
     for (let i = 0; i < numParallels; i++) {
-      // Вычисляем угол широты lat
-      const lat = -Math.PI / 2 + (i / (numParallels - 1)) * Math.PI; 
-      // Берём символ из letters
       const char = letters[i];
-
-      // По окружности (долготе) делаем pointsPerParallel точек
+      // Преобразуем индекс параллели в угол широты от -π/2 до +π/2
+      const lat = -Math.PI / 2 + (i / (numParallels - 1)) * Math.PI;
       for (let j = 0; j < pointsPerParallel; j++) {
+        // Долгота от 0 до 2π
         const lon = (j / pointsPerParallel) * 2 * Math.PI;
-        
-        // x, y, z в сферических координатах
         const x = radius * Math.cos(lat) * Math.cos(lon);
         const y = radius * Math.cos(lat) * Math.sin(lon);
         const z = radius * Math.sin(lat) + zOffset;
-        
-        // Добавляем точку (с той же буквой char)
         points.push({ x, y, z, char });
       }
     }
 
-    // Переменные вращения
+    // Начальные углы вращения (статичны до взаимодействия)
     let rotationX = 0;
     let rotationY = 0;
     let rotationZ = 0;
 
-    // Управление мышью
+    // Управление мышью для ручного вращения
     let isDragging = false;
     let lastMouseX = 0;
     let lastMouseY = 0;
-
     canvas.addEventListener('mousedown', (e) => {
       isDragging = true;
       lastMouseX = e.clientX;
       lastMouseY = e.clientY;
     });
-
     canvas.addEventListener('mousemove', (e) => {
       if (!isDragging) return;
       const dx = e.clientX - lastMouseX;
@@ -94,38 +86,33 @@
       lastMouseX = e.clientX;
       lastMouseY = e.clientY;
     });
-
     canvas.addEventListener('mouseup', () => { isDragging = false; });
     canvas.addEventListener('mouseleave', () => { isDragging = false; });
 
-    // Функция вращения
+    // Функция вращения точки в 3D
     function rotate(point, angleX, angleY, angleZ) {
       let { x, y, z, char } = point;
-
       // Вращение вокруг X
       let cos = Math.cos(angleX), sin = Math.sin(angleX);
       let y1 = y * cos - z * sin;
       let z1 = y * sin + z * cos;
       y = y1; z = z1;
-
       // Вращение вокруг Y
       cos = Math.cos(angleY); sin = Math.sin(angleY);
       let x1 = x * cos + z * sin;
       let z2 = -x * sin + z * cos;
       x = x1; z = z2;
-
       // Вращение вокруг Z
       cos = Math.cos(angleZ); sin = Math.sin(angleZ);
       let x2 = x * cos - y * sin;
       let y2 = x * sin + y * cos;
       x = x2; y = y2;
-
       return { x, y, z, char };
     }
 
-    // Перспективная проекция
+    // Перспективная проекция (камера с фиксированным фокальным расстоянием)
     function project(point) {
-      const focalLength = 500; // "камера"
+      const focalLength = 500;
       const scale = focalLength / (focalLength + point.z);
       return {
         x: point.x * scale + canvas.width / 2,
@@ -133,36 +120,24 @@
       };
     }
 
-    // Анимация
+    // Функция отрисовки (без автоматического вращения)
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
       for (let p of points) {
-        // Вращаем точку
+        // Применяем текущие углы вращения (меняются только при взаимодействии)
         const rotated = rotate(p, rotationX, rotationY, rotationZ);
-        // Проецируем
         const proj = project(rotated);
-
-        // Рассчитываем яркость
         const brightnessFactor = 1 - ((rotated.z - (zOffset - radius)) / (2 * radius));
         const shade = Math.floor(128 + brightnessFactor * 127);
-
         ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
         ctx.font = "16px monospace";
         ctx.fillText(rotated.char, proj.x, proj.y);
       }
-
-      // Автовращение (если нужно «хаотично»)
-      rotationX += 0.005;
-      rotationY += 0.01;
-      rotationZ += 0.003;
-
       requestAnimationFrame(draw);
     }
-
     draw();
 
-    // При ресайзе окна подстраиваем canvas
+    // Обновление размеров canvas при изменении окна
     window.addEventListener('resize', () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
