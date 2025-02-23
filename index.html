@@ -2,7 +2,8 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>UNIVERSEDESIGN - Smaller Cube + Menu Toggle</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UNIVERSEDESIGN - Responsive Cube with Menu</title>
   <style>
     /* Подключаем кастомный шрифт OneDay */
     @font-face {
@@ -11,19 +12,18 @@
       font-weight: normal;
       font-style: normal;
     }
-
     /* Сброс стилей */
     * {
-      margin: 0; 
-      padding: 0; 
+      margin: 0;
+      padding: 0;
       box-sizing: border-box;
     }
     body {
-      width: 100vw; 
+      width: 100vw;
       height: 100vh;
-      background: black; 
+      background: black;
       color: white;
-      overflow: hidden; 
+      overflow: hidden;
       position: relative;
       font-family: 'OneDay', monospace;
     }
@@ -31,8 +31,7 @@
       display: block;
       margin: 0 auto;
     }
-
-    /* Гамбургер (3 полоски) */
+    /* Гамбургер (3 полоски) – изначально скрыт */
     #menu-btn {
       position: absolute;
       top: 20px;
@@ -40,7 +39,7 @@
       width: 40px;
       height: 30px;
       cursor: pointer;
-      display: none; /* Появляется при tParam < 0.1 */
+      display: none;
       z-index: 1000;
     }
     #menu-btn span {
@@ -50,16 +49,15 @@
       background: white;
       margin: 4px 0;
     }
-
-    /* Меню (оверлей) - по умолчанию скрыто, открывается по клику на гамбургер */
+    /* Меню-оверлей – изначально скрыт, открывается по клику на гамбургер */
     #menu-overlay {
       position: absolute;
-      top: 60px; 
+      top: 60px;
       left: 20px;
       width: 220px;
-      background: rgba(0,0,0,0.8);
+      background: rgba(0, 0, 0, 0.8);
       padding: 10px;
-      display: none; /* Меню изначально скрыто */
+      display: none;
       z-index: 1000;
     }
     #menu-overlay img {
@@ -69,31 +67,30 @@
     }
     #menu-overlay ul {
       list-style: none;
-      margin: 0; 
+      margin: 0;
       padding: 0;
     }
     #menu-overlay li {
       margin: 10px 0;
       cursor: pointer;
     }
-
-    /* Оверлей ABOUT, CONTACTS, PROJECTS - единый стиль (по центру) */
-
-    /* Общий фон-оверлей */
+    /* Общий стиль для оверлеев (About, Contacts, Projects) */
     .overlay {
       position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       background: rgba(0,0,0,0.7);
       display: none;
       z-index: 1000;
     }
-    /* Контейнер «плашки» */
     .overlay-container {
       position: absolute;
-      top: 50%; left: 50%;
+      top: 50%;
+      left: 50%;
       transform: translate(-50%, -50%);
-      width: 600px; 
+      width: 600px;
       max-width: 90%;
       background: rgba(0,0,0,0.9);
       padding: 20px;
@@ -106,7 +103,6 @@
       float: right;
       margin-left: 10px;
     }
-    /* Сетка для проектов */
     .projects-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -123,6 +119,81 @@
       border: 1px solid #444;
       cursor: pointer;
     }
+    /* Медиа-запросы для адаптивности */
+    @media screen and (max-width: 575px) {
+      #menu-overlay {
+        width: 180px;
+        top: 40px;
+        left: 10px;
+      }
+      .overlay-container {
+        width: 90%;
+        padding: 15px;
+      }
+      #menu-btn {
+        width: 35px;
+        height: 25px;
+      }
+      #menu-btn span {
+        height: 3px;
+        margin: 3px 0;
+      }
+    }
+    @media screen and (min-width: 576px) and (max-width: 767px) {
+      #menu-overlay {
+        width: 200px;
+        top: 50px;
+        left: 10px;
+      }
+      .overlay-container {
+        width: 90%;
+        padding: 15px;
+      }
+    }
+    @media screen and (min-width: 768px) and (max-width: 991px) {
+      #menu-overlay {
+        width: 220px;
+        top: 60px;
+        left: 20px;
+      }
+      .overlay-container {
+        width: 80%;
+        padding: 20px;
+      }
+    }
+    @media screen and (min-width: 992px) and (max-width: 1199px) {
+      #menu-overlay {
+        width: 240px;
+        top: 70px;
+        left: 20px;
+      }
+      .overlay-container {
+        width: 600px;
+        padding: 20px;
+      }
+    }
+    @media screen and (min-width: 1200px) and (max-width: 1399px) {
+      #menu-overlay {
+        width: 260px;
+        top: 80px;
+        left: 20px;
+      }
+      .overlay-container {
+        width: 600px;
+        padding: 20px;
+      }
+    }
+    @media screen and (min-width: 1400px) {
+      #menu-overlay {
+        width: 280px;
+        top: 80px;
+        left: 20px;
+      }
+      .overlay-container {
+        width: 600px;
+        padding: 20px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -135,7 +206,7 @@
   <span></span>
 </div>
 
-<!-- Меню -->
+<!-- Меню-оверлей -->
 <div id="menu-overlay">
   <img id="menu-logo" src="logo/UNIVERSE.png" alt="Logo">
   <ul>
@@ -146,19 +217,18 @@
   </ul>
 </div>
 
-<!-- ABOUT (оверлей) -->
+<!-- Оверлей About -->
 <div id="about-overlay" class="overlay">
   <div id="about-container" class="overlay-container">
     <span class="close-btn" id="about-close">[x]</span>
     <h2>About</h2>
     <p>
-      We are design studio passionate about technology research,
-      media art and installation/exhibition design.
+      We are design studio passionate about technology research, media art and installation/exhibition design.
     </p>
   </div>
 </div>
 
-<!-- CONTACTS (оверлей) -->
+<!-- Оверлей Contacts -->
 <div id="contacts-overlay" class="overlay">
   <div id="contacts-container" class="overlay-container">
     <span class="close-btn" id="contacts-close">[x]</span>
@@ -170,7 +240,7 @@
   </div>
 </div>
 
-<!-- PROJECTS (оверлей) -->
+<!-- Оверлей Projects -->
 <div id="projects-overlay" class="overlay">
   <div id="projects-container" class="overlay-container">
     <span class="close-btn" id="projects-close">[x]</span>
@@ -187,7 +257,7 @@
 </div>
 
 <script>
-  /* ===================== КУБ ===================== */
+  /* ========== КОД КУБА ========== */
   const canvas = document.getElementById("canvas");
   const ctx = canvas.getContext("2d");
   canvas.width = window.innerWidth;
@@ -195,12 +265,12 @@
 
   const letters = "UNIVERSEDESIGN";
   const cubeSize = 300; // координаты от -150 до +150
-  const half = cubeSize/2;
+  const half = cubeSize / 2;
   const linesX = 14;
   const linesY = 14;
   const pointsPerLine = 10;
-  const topZ = +half;  
-  const botZ = -half;  
+  const topZ = +half;
+  const botZ = -half;
 
   let tParam = 1; // 1 = хаос, 0 = куб собран
   let rotationX = 0;
@@ -212,7 +282,6 @@
   let scatterTriggered = false;
 
   let points = [];
-
   function randomScatter(){
     return {
       x: (Math.random()-0.5)*2000,
@@ -220,7 +289,6 @@
       z: (Math.random()-0.5)*2000
     };
   }
-  // Генерация точек
   for(let j=0; j<linesY; j++){
     const fracY = j/(linesY-1);
     const yVal = -half + fracY*cubeSize;
@@ -228,7 +296,7 @@
       const fracX = i/(linesX-1);
       const xVal = -half + fracX*cubeSize;
       let char;
-      if(j===linesY-1){
+      if(j === linesY-1){
         char = letters[i % letters.length];
       } else {
         const rnd = Math.floor(Math.random()*letters.length);
@@ -237,161 +305,148 @@
       for(let k=0; k<pointsPerLine; k++){
         const fracZ = k/(pointsPerLine-1);
         const zVal = topZ*(1-fracZ) + botZ*fracZ;
-        const cubePos = {x:xVal,y:yVal,z:zVal};
+        const cubePos = {x: xVal, y: yVal, z: zVal};
         const scatterPos = randomScatter();
         points.push({cubePos, scatterPos, char, i, j});
       }
     }
   }
 
-  /* Управление мышью/тач */
-  function startPointer(x,y){
-    isDragging=true;
-    lastX=x; lastY=y;
-    dragStartY=y;
-    gatherTriggered=false;
-    scatterTriggered=false;
+  /* ========== УПРАВЛЕНИЕ МЫШЬЮ/ТАЧ ========== */
+  function startPointer(x, y){
+    isDragging = true;
+    lastX = x; lastY = y;
+    dragStartY = y;
+    gatherTriggered = false;
+    scatterTriggered = false;
   }
-  function movePointer(x,y){
+  function movePointer(x, y){
     if(!isDragging) return;
-    const dx = x-lastX;
-    const dy = y-lastY;
-    rotationY += dx*0.01;
-    rotationX += dy*0.01;
-    lastX=x; lastY=y;
-
+    const dx = x - lastX;
+    const dy = y - lastY;
+    rotationY += dx * 0.01;
+    rotationX += dy * 0.01;
+    lastX = x; lastY = y;
     const totalDy = y - dragStartY;
-    if(!gatherTriggered && totalDy<-100 && tParam>0.5){
-      gatherTriggered=true;
+    if(!gatherTriggered && totalDy < -100 && tParam > 0.5){
+      gatherTriggered = true;
       animateGather();
     }
-    if(!scatterTriggered && totalDy>100 && tParam<0.5){
-      scatterTriggered=true;
+    if(!scatterTriggered && totalDy > 100 && tParam < 0.5){
+      scatterTriggered = true;
       animateScatter();
     }
   }
-  function endPointer(){ isDragging=false; }
-
-  canvas.addEventListener("mousedown",(e)=>startPointer(e.clientX,e.clientY));
-  canvas.addEventListener("mousemove",(e)=>movePointer(e.clientX,e.clientY));
+  function endPointer(){ isDragging = false; }
+  canvas.addEventListener("mousedown", (e)=>startPointer(e.clientX,e.clientY));
+  canvas.addEventListener("mousemove", (e)=>movePointer(e.clientX,e.clientY));
   canvas.addEventListener("mouseup", endPointer);
   canvas.addEventListener("mouseleave", endPointer);
-
-  canvas.addEventListener("touchstart",(e)=>{
+  canvas.addEventListener("touchstart", (e)=>{
     e.preventDefault();
-    if(e.touches.length>0){
-      let t=e.touches[0];
-      startPointer(t.clientX,t.clientY);
+    if(e.touches.length > 0){
+      let t = e.touches[0];
+      startPointer(t.clientX, t.clientY);
     }
-  },{passive:false});
-  canvas.addEventListener("touchmove",(e)=>{
+  }, {passive:false});
+  canvas.addEventListener("touchmove", (e)=>{
     e.preventDefault();
-    if(e.touches.length>0){
-      let t=e.touches[0];
-      movePointer(t.clientX,t.clientY);
+    if(e.touches.length > 0){
+      let t = e.touches[0];
+      movePointer(t.clientX, t.clientY);
     }
-  },{passive:false});
-  canvas.addEventListener("touchend",(e)=>{
+  }, {passive:false});
+  canvas.addEventListener("touchend", (e)=>{
     e.preventDefault();
     endPointer();
-  },{passive:false});
-
-  // Колёсико
-  canvas.addEventListener("wheel",(e)=>{
+  }, {passive:false});
+  canvas.addEventListener("wheel", (e)=>{
     e.preventDefault();
-    const sensitivity=0.0005;
-    let newT = tParam + e.deltaY*sensitivity;
-    newT=Math.max(0,Math.min(1,newT));
-    tParam=newT;
-  },{passive:false});
+    const sensitivity = 0.0005;
+    let newT = tParam + e.deltaY * sensitivity;
+    newT = Math.max(0, Math.min(1, newT));
+    tParam = newT;
+  }, {passive:false});
 
-  /* Анимация сборки (t=1->0) */
+  /* Анимация сборки (t: 1->0) */
   function animateGather(){
-    const startTime=performance.now();
-    const duration=2000;
-    const initT=tParam;
+    const startTime = performance.now();
+    const duration = 2000;
+    const initT = tParam;
     function step(){
-      const now=performance.now();
-      const elapsed=now - startTime;
-      const alpha=elapsed/duration;
-      if(alpha>=1){
-        tParam=0;
-        // Фиксированный ракурс
-        rotationX=-0.4;
-        rotationY=0.5;
+      const now = performance.now();
+      const elapsed = now - startTime;
+      const alpha = elapsed/duration;
+      if(alpha >= 1){
+        tParam = 0;
+        rotationX = -0.4;
+        rotationY = 0.5;
       } else {
-        tParam=initT*(1-alpha);
+        tParam = initT * (1 - alpha);
         requestAnimationFrame(step);
       }
     }
     requestAnimationFrame(step);
   }
-
-  /* Анимация разброса (t=0->1) */
+  /* Анимация разброса (t: 0->1) */
   function animateScatter(){
-    const startTime=performance.now();
-    const duration=2000;
-    const initT=tParam;
+    const startTime = performance.now();
+    const duration = 2000;
+    const initT = tParam;
     function step(){
-      const now=performance.now();
-      const elapsed=now - startTime;
-      const alpha=elapsed/duration;
-      if(alpha>=1){
-        tParam=1;
+      const now = performance.now();
+      const elapsed = now - startTime;
+      const alpha = elapsed/duration;
+      if(alpha >= 1){
+        tParam = 1;
       } else {
-        tParam= initT + (1-initT)*alpha;
+        tParam = initT + (1 - initT) * alpha;
         requestAnimationFrame(step);
       }
     }
     requestAnimationFrame(step);
   }
 
-  /* Авто-вращение */
-  let autoRotateSpeed=0.002;
-
-  function rotate3D(x,y,z,angleX,angleY){
-    let cosX=Math.cos(angleX), sinX=Math.sin(angleX);
-    let y1=y*cosX - z*sinX;
-    let z1=y*sinX + z*cosX;
-    y=y1; z=z1;
-    let cosY=Math.cos(angleY), sinY=Math.sin(angleY);
-    let x1=x*cosY + z*sinY;
-    let z2=-x*sinY + z*cosY;
-    x=x1; z=z2;
-    return {x,y,z};
+  let autoRotateSpeed = 0.002;
+  function rotate3D(x, y, z, angleX, angleY){
+    let cosX = Math.cos(angleX), sinX = Math.sin(angleX);
+    let y1 = y * cosX - z * sinX;
+    let z1 = y * sinX + z * cosX;
+    y = y1; z = z1;
+    let cosY = Math.cos(angleY), sinY = Math.sin(angleY);
+    let x1 = x * cosY + z * sinY;
+    let z2 = -x * sinY + z * cosY;
+    x = x1; z = z2;
+    return {x, y, z};
   }
-  function project3D(x,y,z){
-    const focal=500;
-    const scale=focal/(focal+z);
-    return { x:x*scale+canvas.width/2, y:y*scale+canvas.height/2 };
+  function project3D(x, y, z){
+    const focal = 500;
+    const scale = focal/(focal+z);
+    return { x: x * scale + canvas.width/2, y: y * scale + canvas.height/2 };
   }
-
-  /* Рендер */
   function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     if(!isDragging){
       rotationY += autoRotateSpeed;
     }
-    // Показываем гамбургер, если куб собран
     if(tParam < 0.1){
       menuBtn.style.display="block";
     } else {
       menuBtn.style.display="none";
     }
-    // Рисуем точки
     for(let p of points){
-      const x0=(1-tParam)*p.cubePos.x + tParam*p.scatterPos.x;
-      const y0=(1-tParam)*p.cubePos.y + tParam*p.scatterPos.y;
-      const z0=(1-tParam)*p.cubePos.z + tParam*p.scatterPos.z;
-      const rotated=rotate3D(x0,y0,z0,rotationX,rotationY);
-      const proj=project3D(rotated.x,rotated.y,rotated.z);
-      if(p.j===linesY-1 && tParam<0.1){
+      const x0 = (1-tParam)*p.cubePos.x + tParam*p.scatterPos.x;
+      const y0 = (1-tParam)*p.cubePos.y + tParam*p.scatterPos.y;
+      const z0 = (1-tParam)*p.cubePos.z + tParam*p.scatterPos.z;
+      const rotated = rotate3D(x0, y0, z0, rotationX, rotationY);
+      const proj = project3D(rotated.x, rotated.y, rotated.z);
+      if(p.j === linesY-1 && tParam < 0.1){
         ctx.fillStyle="white";
         ctx.font="bold 16px OneDay";
       } else {
-        let bf=1 - (rotated.z+1000)/2000;
-        bf=Math.max(0,Math.min(1,bf));
-        let shade=Math.floor(128 + bf*127);
+        let bf = 1 - (rotated.z+1000)/2000;
+        bf = Math.max(0, Math.min(1, bf));
+        let shade = Math.floor(128 + bf*127);
         ctx.fillStyle=`rgb(${shade},${shade},${shade})`;
         ctx.font="16px OneDay";
       }
@@ -401,30 +456,29 @@
   }
   requestAnimationFrame(draw);
 
-  // Ресайз
-  window.addEventListener("resize",()=>{
-    canvas.width=window.innerWidth;
-    canvas.height=window.innerHeight;
+  window.addEventListener("resize", ()=>{
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
   });
 
   /* ========== МЕНЮ И ОВЕРЛЕИ ========== */
   const menuBtn = document.getElementById("menu-btn");
   const menuOverlay = document.getElementById("menu-overlay");
-
   const aboutOverlay = document.getElementById("about-overlay");
-  const aboutClose = document.getElementById("about-close");
   const contactsOverlay = document.getElementById("contacts-overlay");
-  const contactsClose = document.getElementById("contacts-close");
   const projectsOverlay = document.getElementById("projects-overlay");
-  const projectsClose = document.getElementById("projects-close");
 
   const homeLink = document.getElementById("home-link");
   const aboutLink = document.getElementById("about-link");
   const projectsLink = document.getElementById("projects-link");
   const contactsLink = document.getElementById("contacts-link");
 
-  // Клик на гамбургер - открываем/закрываем меню
-  menuBtn.addEventListener("click", () => {
+  const aboutClose = document.getElementById("about-close");
+  const contactsClose = document.getElementById("contacts-close");
+  const projectsClose = document.getElementById("projects-close");
+
+  // Гамбургер: открывает/закрывает меню-оверлей
+  menuBtn.addEventListener("click", ()=>{
     if(menuOverlay.style.display==="block"){
       menuOverlay.style.display="none";
     } else {
@@ -432,45 +486,44 @@
     }
   });
 
-  // HOME
-  homeLink.addEventListener("click", () => {
-    // Снова собранный куб, фиксированный ракурс
+  // HOME: возвращает собранный куб с фиксированным ракурсом
+  homeLink.addEventListener("click", ()=>{
     tParam=0;
     rotationX=-0.4;
     rotationY=0.5;
-    // Закрываем все оверлеи
+    // Оставляем меню открытым
     aboutOverlay.style.display="none";
     contactsOverlay.style.display="none";
     projectsOverlay.style.display="none";
   });
 
-  // ABOUT
-  aboutLink.addEventListener("click", () => {
+  // ABOUT: открывает попап по центру
+  aboutLink.addEventListener("click", ()=>{
     aboutOverlay.style.display="block";
     contactsOverlay.style.display="none";
     projectsOverlay.style.display="none";
   });
-  aboutClose.addEventListener("click", () => {
+  aboutClose.addEventListener("click", ()=>{
     aboutOverlay.style.display="none";
   });
 
-  // PROJECTS
-  projectsLink.addEventListener("click", () => {
+  // PROJECTS: открывает оверлей с проектами
+  projectsLink.addEventListener("click", ()=>{
     projectsOverlay.style.display="block";
     aboutOverlay.style.display="none";
     contactsOverlay.style.display="none";
   });
-  projectsClose.addEventListener("click", () => {
+  projectsClose.addEventListener("click", ()=>{
     projectsOverlay.style.display="none";
   });
 
-  // CONTACTS
-  contactsLink.addEventListener("click", () => {
+  // CONTACTS: открывает попап с контактами (ссылки светло-серые)
+  contactsLink.addEventListener("click", ()=>{
     contactsOverlay.style.display="block";
     aboutOverlay.style.display="none";
     projectsOverlay.style.display="none";
   });
-  contactsClose.addEventListener("click", () => {
+  contactsClose.addEventListener("click", ()=>{
     contactsOverlay.style.display="none";
   });
 </script>
