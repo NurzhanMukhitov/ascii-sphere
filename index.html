@@ -11,7 +11,6 @@
       font-weight: normal;
       font-style: normal;
     }
-
     /* Базовые стили */
     * {
       margin: 0;
@@ -51,6 +50,7 @@
   const pointsPerLine = 10;         // точек на каждой нити
   const topZ = +half;               // +200 (верх)
   const botZ = -half;               // -200 (низ)
+  // При сборке (t=0) — куб, при хаосе (t=1) — разброс
 
   // ======= МАССИВ ТОЧЕК =======
   // Каждая точка: { cubePos, scatterPos, char, i, j }
@@ -98,7 +98,7 @@
 
   // ======= ПАРАМЕТР t (интерполяция) =======
   // tParam: 0 = куб собран, 1 = хаос
-  let tParam = 1; // начинаем с хаоса
+  let tParam = 1; // начинаем с хаотичного состояния
 
   // ======= ВРАЩЕНИЕ =======
   let rotationX = 0;
@@ -165,7 +165,7 @@
     endPointer();
   }, { passive: false });
   
-  // Колёсико (десктоп)
+  // Колёсико (десктоп) для ручного управления tParam
   canvas.addEventListener("wheel", (e) => {
     e.preventDefault();
     let sensitivity = 0.0005;
@@ -175,10 +175,10 @@
   }, { passive: false });
   
   // ======= АНИМАЦИЯ СБОРКИ (t: 1 -> 0) =======
-  // Без паузы, просто плавный переход за 2 секунды
+  // Плавный переход за 2 секунды
   function animateGather() {
     const startTime = performance.now();
-    const duration = 2000; // 2 секунды
+    const duration = 2000;
     const initT = tParam;
     function step() {
       let now = performance.now();
@@ -258,19 +258,20 @@
       // Проекция
       const proj = project3D(rotated.x, rotated.y, rotated.z);
       
-      // Если это верхняя грань (j=13) и куб собран (tParam < 0.1),
-      // то подсвечиваем буквы светло бирюзовым цветом.
+      // Если это верхняя грань (j = linesY - 1) и куб собран (tParam < 0.1)
+      // подсвечиваем буквы белым и жирным.
       if (p.j === linesY - 1 && tParam < 0.1) {
-        ctx.fillStyle = "#40E0D0"; // светло бирюзовый
+        ctx.fillStyle = "white";
+        ctx.font = "bold 16px OneDay";
       } else {
         // Остальные буквы с обычной яркостью
         let brightnessFactor = 1 - (rotated.z + 1000) / 2000;
         brightnessFactor = Math.max(0, Math.min(1, brightnessFactor));
         let shade = Math.floor(128 + brightnessFactor * 127);
         ctx.fillStyle = `rgb(${shade},${shade},${shade})`;
+        ctx.font = "16px OneDay";
       }
       
-      ctx.font = "16px OneDay";
       ctx.fillText(p.char, proj.x, proj.y);
     }
     
