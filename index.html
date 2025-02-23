@@ -2,61 +2,55 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>UNIVERSEDESIGN - 14x14 Cube</title>
+  <title>UNIVERSEDESIGN - Fixed Orientation on Gather</title>
   <style>
-    /* Подключаем кастомный шрифт OneDay из файла ONEDAY.woff */
     @font-face {
       font-family: 'OneDay';
       src: url('fonts/ONEDAY.woff') format('woff');
       font-weight: normal;
       font-style: normal;
     }
-    /* Базовые стили */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      width: 100vw;
-      height: 100vh;
-      background: black;
-      color: white;
-      overflow: hidden;
-      position: relative;
+      width: 100vw; height: 100vh;
+      background: black; color: white;
+      overflow: hidden; position: relative;
       font-family: 'OneDay', monospace;
     }
-    canvas {
-      display: block;
-      margin: 0 auto;
-    }
+    canvas { display: block; margin: 0 auto; }
   </style>
 </head>
 <body>
 <canvas id="canvas"></canvas>
 <script>
-  // Настройка canvas
   const canvas = document.getElementById("canvas");
   const ctx = canvas.getContext("2d");
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  // ======= ПАРАМЕТРЫ КУБА =======
-  const letters = "UNIVERSEDESIGN"; // 14 символов
-  const cubeSize = 400;             // координаты от -200 до +200
-  const half = cubeSize / 2;        // 200
-  const linesX = 14;                // нитей по оси X
-  const linesY = 14;                // нитей по оси Y
-  const pointsPerLine = 10;         // точек на каждой нити
-  const topZ = +half;               // +200 (верх)
-  const botZ = -half;               // -200 (низ)
-  // При сборке (t=0) — куб, при хаосе (t=1) — разброс
+  const letters = "UNIVERSEDESIGN";
+  const cubeSize = 300;    // Координаты от –150 до +150
+  const half = cubeSize/2; // 150
+  const linesX = 14;
+  const linesY = 14;
+  const pointsPerLine = 10;
+  const topZ = +half;      // +150
+  const botZ = -half;      // -150
 
-  // ======= МАССИВ ТОЧЕК =======
-  // Каждая точка: { cubePos, scatterPos, char, i, j }
+  // Параметр для сборки/разброса
+  let tParam = 1; // Начинаем с хаоса
+
+  // Углы поворота
+  let rotationX = 0;
+  let rotationY = 0;
+  let isDragging = false;
+  let lastX = 0, lastY = 0;
+  let dragStartY = 0;
+  let gatherTriggered = false;
+  let scatterTriggered = false;
+
+  // Генерация точек
   let points = [];
-
-  // Функция для генерации случайной позиции для scatter (±1000)
   function randomScatter() {
     return {
       x: (Math.random() - 0.5) * 2000,
@@ -64,225 +58,190 @@
       z: (Math.random() - 0.5) * 2000
     };
   }
-
-  // Генерируем нити:
-  // Верхняя грань – j = 13 (y = +200) будет отображать слово UNIVERSEDESIGN,
-  // остальные точки – случайные буквы.
-  for (let j = 0; j < linesY; j++) {
-    const fracY = j / (linesY - 1);
-    const yVal = -half + fracY * cubeSize; // от -200 до +200
-    for (let i = 0; i < linesX; i++) {
-      const fracX = i / (linesX - 1);
-      const xVal = -half + fracX * cubeSize; // от -200 до +200
-
+  for (let j=0; j<linesY; j++){
+    const fracY = j/(linesY-1);
+    const yVal = -half + fracY*cubeSize;
+    for (let i=0; i<linesX; i++){
+      const fracX = i/(linesX-1);
+      const xVal = -half + fracX*cubeSize;
       let char;
-      if (j === linesY - 1) {
-        // Верхняя линия: берём букву из letters по порядку
+      if (j === linesY -1){
         char = letters[i % letters.length];
       } else {
-        // Остальные: случайная буква
-        const randomIndex = Math.floor(Math.random() * letters.length);
-        char = letters[randomIndex];
+        const randIndex = Math.floor(Math.random() * letters.length);
+        char = letters[randIndex];
       }
-
-      // Линия вдоль оси Z: pointsPerLine точек
-      for (let k = 0; k < pointsPerLine; k++) {
-        const fracZ = k / (pointsPerLine - 1);
-        const zVal = topZ * (1 - fracZ) + botZ * fracZ; // от +200 до -200
-        const cubePos = { x: xVal, y: yVal, z: zVal };
+      for (let k=0; k<pointsPerLine; k++){
+        const fracZ = k/(pointsPerLine-1);
+        const zVal = topZ*(1-fracZ) + botZ*fracZ;
+        const cubePos = {x:xVal, y:yVal, z:zVal};
         const scatterPos = randomScatter();
-        points.push({ cubePos, scatterPos, char, i, j });
+        points.push({cubePos, scatterPos, char, i, j});
       }
     }
   }
 
-  // ======= ПАРАМЕТР t (интерполяция) =======
-  // tParam: 0 = куб собран, 1 = хаос
-  let tParam = 1; // начинаем с хаотичного состояния
-
-  // ======= ВРАЩЕНИЕ =======
-  let rotationX = 0;
-  let rotationY = 0;
-
-  // ======= УПРАВЛЕНИЕ (МЫШЬ + TOUCH) =======
-  let isDragging = false;
-  let lastX = 0, lastY = 0;
-  let dragStartY = 0;
-  let gatherTriggered = false;
-  let scatterTriggered = false;
-
-  function startPointer(x, y) {
+  // Управление мышью/тачем
+  function startPointer(x,y){
     isDragging = true;
-    lastX = x;
-    lastY = y;
+    lastX = x; lastY = y;
     dragStartY = y;
     gatherTriggered = false;
     scatterTriggered = false;
   }
-  function movePointer(x, y) {
-    if (!isDragging) return;
-    let dx = x - lastX;
-    let dy = y - lastY;
-    rotationY += dx * 0.01;
-    rotationX += dy * 0.01;
-    lastX = x;
-    lastY = y;
-    
-    let totalDy = y - dragStartY;
-    if (!gatherTriggered && totalDy < -100 && tParam > 0.5) {
+  function movePointer(x,y){
+    if(!isDragging) return;
+    const dx = x - lastX;
+    const dy = y - lastY;
+    rotationY += dx*0.01;
+    rotationX += dy*0.01;
+    lastX = x; lastY = y;
+
+    const totalDy = y - dragStartY;
+    if(!gatherTriggered && totalDy < -100 && tParam>0.5){
       gatherTriggered = true;
       animateGather();
     }
-    if (!scatterTriggered && totalDy > 100 && tParam < 0.5) {
+    if(!scatterTriggered && totalDy>100 && tParam<0.5){
       scatterTriggered = true;
       animateScatter();
     }
   }
-  function endPointer() {
+  function endPointer(){
     isDragging = false;
   }
-  canvas.addEventListener("mousedown", (e) => startPointer(e.clientX, e.clientY));
-  canvas.addEventListener("mousemove", (e) => movePointer(e.clientX, e.clientY));
-  canvas.addEventListener("mouseup", endPointer);
-  canvas.addEventListener("mouseleave", endPointer);
-  
-  canvas.addEventListener("touchstart", (e) => {
+  canvas.addEventListener("mousedown",(e)=>startPointer(e.clientX,e.clientY));
+  canvas.addEventListener("mousemove",(e)=>movePointer(e.clientX,e.clientY));
+  canvas.addEventListener("mouseup",endPointer);
+  canvas.addEventListener("mouseleave",endPointer);
+
+  canvas.addEventListener("touchstart",(e)=>{
     e.preventDefault();
-    if (e.touches.length > 0) {
+    if(e.touches.length>0){
       let t = e.touches[0];
-      startPointer(t.clientX, t.clientY);
+      startPointer(t.clientX,t.clientY);
     }
-  }, { passive: false });
-  canvas.addEventListener("touchmove", (e) => {
+ },{passive:false});
+  canvas.addEventListener("touchmove",(e)=>{
     e.preventDefault();
-    if (e.touches.length > 0) {
+    if(e.touches.length>0){
       let t = e.touches[0];
-      movePointer(t.clientX, t.clientY);
+      movePointer(t.clientX,t.clientY);
     }
-  }, { passive: false });
-  canvas.addEventListener("touchend", (e) => {
+ },{passive:false});
+  canvas.addEventListener("touchend",(e)=>{
     e.preventDefault();
     endPointer();
-  }, { passive: false });
-  
-  // Колёсико (десктоп) для ручного управления tParam
-  canvas.addEventListener("wheel", (e) => {
+  },{passive:false});
+
+  // Колёсико
+  canvas.addEventListener("wheel",(e)=>{
     e.preventDefault();
-    let sensitivity = 0.0005;
-    let newT = tParam + e.deltaY * sensitivity;
-    newT = Math.max(0, Math.min(1, newT));
+    const sensitivity = 0.0005;
+    let newT = tParam + e.deltaY*sensitivity;
+    newT = Math.max(0,Math.min(1,newT));
     tParam = newT;
-  }, { passive: false });
-  
-  // ======= АНИМАЦИЯ СБОРКИ (t: 1 -> 0) =======
-  // Плавный переход за 2 секунды
-  function animateGather() {
+  },{passive:false});
+
+  // Анимация сборки
+  function animateGather(){
     const startTime = performance.now();
     const duration = 2000;
     const initT = tParam;
-    function step() {
-      let now = performance.now();
-      let elapsed = now - startTime;
-      let alpha = elapsed / duration;
-      if (alpha >= 1) {
+    function step(){
+      const now = performance.now();
+      const elapsed = now - startTime;
+      const alpha = elapsed/duration;
+      if(alpha>=1){
         tParam = 0;
+        // ВАЖНО: Тут ставим нужные углы, чтобы куб имел «финальный» ракурс
+        // Пример (подберите сами):
+        rotationX = -0.4; 
+        rotationY = 0.5;
       } else {
-        tParam = initT * (1 - alpha);
+        tParam = initT*(1-alpha);
         requestAnimationFrame(step);
       }
     }
     requestAnimationFrame(step);
   }
-  
-  // ======= АНИМАЦИЯ РАЗБРОСА (t: 0 -> 1) =======
-  function animateScatter() {
+  // Анимация разброса
+  function animateScatter(){
     const startTime = performance.now();
     const duration = 2000;
     const initT = tParam;
-    function step() {
-      let now = performance.now();
-      let elapsed = now - startTime;
-      let alpha = elapsed / duration;
-      if (alpha >= 1) {
+    function step(){
+      const now = performance.now();
+      const elapsed = now - startTime;
+      const alpha = elapsed/duration;
+      if(alpha>=1){
         tParam = 1;
       } else {
-        tParam = initT + (1 - initT) * alpha;
+        tParam = initT + (1-initT)*alpha;
         requestAnimationFrame(step);
       }
     }
     requestAnimationFrame(step);
   }
-  
-  // ======= АВТО-ВРАЩЕНИЕ =======
+
+  // Авто-вращение
   let autoRotateSpeed = 0.002;
-  
-  // ======= 3D ВРАЩЕНИЕ И ПРОЕКЦИЯ =======
-  function rotate3D(x, y, z, angleX, angleY) {
+
+  // Функции вращения и проекции
+  function rotate3D(x,y,z,angleX,angleY){
     let cosX = Math.cos(angleX), sinX = Math.sin(angleX);
-    let y1 = y * cosX - z * sinX;
-    let z1 = y * sinX + z * cosX;
-    y = y1; z = z1;
+    let y1 = y*cosX - z*sinX;
+    let z1 = y*sinX + z*cosX;
+    y=y1; z=z1;
     let cosY = Math.cos(angleY), sinY = Math.sin(angleY);
-    let x1 = x * cosY + z * sinY;
-    let z2 = -x * sinY + z * cosY;
-    x = x1; z = z2;
-    return { x, y, z };
+    let x1 = x*cosY + z*sinY;
+    let z2 = -x*sinY + z*cosY;
+    x=x1; z=z2;
+    return {x,y,z};
   }
-  
-  function project3D(x, y, z) {
-    const focal = 500;
-    const scale = focal / (focal + z);
-    return {
-      x: x * scale + canvas.width / 2,
-      y: y * scale + canvas.height / 2
+  function project3D(x,y,z){
+    const focal=500;
+    const scale=focal/(focal+z);
+    return{
+      x:x*scale + canvas.width/2,
+      y:y*scale + canvas.height/2
     };
   }
-  
-  // ======= РЕНДЕР =======
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Авто-вращение, если пользователь не взаимодействует
-    if (!isDragging) {
+
+  // Рендер
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    if(!isDragging){
       rotationY += autoRotateSpeed;
     }
-    
-    for (let p of points) {
-      // Интерполяция между собранным (p.cubePos) и хаотичным (p.scatterPos)
-      const x0 = (1 - tParam) * p.cubePos.x + tParam * p.scatterPos.x;
-      const y0 = (1 - tParam) * p.cubePos.y + tParam * p.scatterPos.y;
-      const z0 = (1 - tParam) * p.cubePos.z + tParam * p.scatterPos.z;
-      
-      // Вращение
-      const rotated = rotate3D(x0, y0, z0, rotationX, rotationY);
-      // Проекция
-      const proj = project3D(rotated.x, rotated.y, rotated.z);
-      
-      // Если это верхняя грань (j = linesY - 1) и куб собран (tParam < 0.1)
-      // подсвечиваем буквы белым и жирным.
-      if (p.j === linesY - 1 && tParam < 0.1) {
+    for(let p of points){
+      const x0 = (1 - tParam)*p.cubePos.x + tParam*p.scatterPos.x;
+      const y0 = (1 - tParam)*p.cubePos.y + tParam*p.scatterPos.y;
+      const z0 = (1 - tParam)*p.cubePos.z + tParam*p.scatterPos.z;
+      const rotated = rotate3D(x0,y0,z0,rotationX,rotationY);
+      const proj = project3D(rotated.x,rotated.y,rotated.z);
+
+      // Подсветка верхней грани
+      if(p.j === linesY-1 && tParam<0.1){
         ctx.fillStyle = "white";
         ctx.font = "bold 16px OneDay";
       } else {
-        // Остальные буквы с обычной яркостью
-        let brightnessFactor = 1 - (rotated.z + 1000) / 2000;
-        brightnessFactor = Math.max(0, Math.min(1, brightnessFactor));
-        let shade = Math.floor(128 + brightnessFactor * 127);
+        let brightnessFactor = 1 - (rotated.z+1000)/2000;
+        brightnessFactor = Math.max(0,Math.min(1,brightnessFactor));
+        let shade = Math.floor(128 + brightnessFactor*127);
         ctx.fillStyle = `rgb(${shade},${shade},${shade})`;
         ctx.font = "16px OneDay";
       }
-      
-      ctx.fillText(p.char, proj.x, proj.y);
+      ctx.fillText(p.char,proj.x,proj.y);
     }
-    
     requestAnimationFrame(draw);
   }
   requestAnimationFrame(draw);
-  
-  // При изменении размеров окна
-  window.addEventListener("resize", () => {
+
+  // Ресайз
+  window.addEventListener("resize",()=>{
     canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.height= window.innerHeight;
   });
 </script>
 </body>
