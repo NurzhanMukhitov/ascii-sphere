@@ -1,0 +1,140 @@
+body {
+    margin: 0;
+    padding: 0;
+    background: #000;
+    overflow: hidden;
+    font-family: 'OneDay', sans-serif;
+}
+
+canvas {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.menu {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 70px;
+    z-index: 1000;
+}
+
+.menu-btn {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    width: 40px;
+    height: 30px;
+    cursor: pointer;
+}
+
+.menu-btn span {
+    width: 100%;
+    height: 4px;
+    background: #fff;
+    display: block;
+    margin: 4px 0;
+}
+
+.logo-text {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    font-size: 24px;
+    color: #fff;
+    text-align: right;
+    line-height: 1.1;
+    cursor: pointer;
+}
+
+.overlay-menu {
+    position: absolute;
+    left: 20px;
+    top: 70px;
+    width: 220px;
+    background: rgba(0, 0, 0, .8);
+    padding: 10px;
+    display: none;
+    z-index: 1000;
+}
+
+.overlay-menu ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.overlay-menu ul li {
+    margin: 10px 0;
+}
+
+.overlay-menu ul li a {
+    color: #fff;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.overlay-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    z-index: 1001;
+}
+
+.popup-block {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    display: none;
+    color: #fff;
+    text-align: center;
+    font-size: 24px;
+    z-index: 1002;
+}
+
+.popup-block .popup-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 800px;
+}
+
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.project-item {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    text-align: center;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+#about .popup-content, #contacts .popup-content {
+    font-size: 36px;
+}
+
+#contacts a {
+    color: #fff;
+    text-decoration: none;
+}
+
+@font-face {
+    font-family: 'OneDay';
+    src: url('fonts/ONEDAY.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
